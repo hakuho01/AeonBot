@@ -14,7 +14,7 @@ bot.mention do |event|
     event.respond '生きてまーす。'
 end
 
-bot.message(contains: /^(?!http)(?!.*<@)(?!.*<#)[!-~]{20,}$/) do |event|
+bot.message(contains: /^(?!http)(?!.*<@)(?!.*<#)(?!.*<:)[!-~]{20,}$/) do |event|
     event.respond 'ハッシュ値やアクセストークンの疑いがある文字列を検知しました。'
     api.add_member_role("Bot #{TOKEN}", SERVER_ID, event.user.id, ROLE_ID)
 end
