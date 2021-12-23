@@ -18,8 +18,13 @@ end
 
 bot.message(contains: /^(?!http)(?!.*<@)(?!.*<#)(?!.*<:)(?!.*<a:)(?!.*<t:)[!-~]{20,}$/) do |event|
     event.respond 'ハッシュ値やアクセストークンの疑いがある文字列を検知しました。'
-    api.add_member_role("Bot #{TOKEN}", SERVER_ID, event.user.id, ISOLATE_ROLE_ID)
-    api.remove_member_role("Bot #{TOKEN}", SERVER_ID, event.user.id, DEPRIVATE_ROLE_ID)
+    if 
+        event.respond 'さらなる罪を重ねるか……'
+        #api.remove_member("Bot #{TOKEN}", SERVER_ID, event.user.id)
+    else
+        api.add_member_role("Bot #{TOKEN}", SERVER_ID, event.user.id, ISOLATE_ROLE_ID)
+        api.remove_member_role("Bot #{TOKEN}", SERVER_ID, event.user.id, DEPRIVATE_ROLE_ID)
+    end
 end
 
 bot.run
