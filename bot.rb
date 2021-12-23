@@ -11,7 +11,7 @@ bot = Discordrb::Commands::CommandBot.new token: TOKEN, client_id: CLIENT_ID, pr
 api = Discordrb::API::Server
 
 bot.mention do |event|
-    event.respond '生きてまーす。'
+    event.respond '生きてます。'
 end
 
 bot.message(contains: /^(?!http)(?!.*<@)(?!.*<#)(?!.*<:)[!-~]{20,}$/) do |event|
