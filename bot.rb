@@ -18,7 +18,7 @@ bot.mention do |event|
   event.respond '馴れ馴れしくするな……'
 end
 
-bot.message(contains: /^(?!http)(?!.*<@)(?!.*<#)(?!.*<:)(?!.*<a:)(?!.*<t:)[ -/:-@\[-~]{20,}$/) do |event|
+bot.message(contains: /^(?!http)(?!.*<@)(?!.*<#)(?!.*<:)(?!.*<a:)(?!.*<t:)[!-~]{19,}$/) do |event|
   event.respond 'ハッシュ値やアクセストークンの疑いがある文字列を検知した。'
   member_info = api.resolve_member("Bot #{TOKEN}", SERVER_ID, event.user.id)
   member_role = JSON.parse(member_info)
