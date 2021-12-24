@@ -55,6 +55,8 @@ GEM
     netrc (0.11.0)
     nokogiri (1.12.5-arm64-darwin)
       racc (~> 1.4)
+    nokogiri (1.12.5-x86_64-linux)
+      racc (~> 1.4)
     opus-ruby (1.0.1)
       ffi
     racc (1.6.0)
@@ -93,6 +95,7 @@ GEM
 
 PLATFORMS
   arm64-darwin-20
+  x86_64-linux
 
 DEPENDENCIES
   discordrb
