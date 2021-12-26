@@ -12,15 +12,15 @@ CLIENT_ID = ENV['CLIENT_ID']
 SERVER_ID = ENV['SERVER_ID']
 ISOLATE_ROLE_ID = ENV['ISOLATE_ROLE_ID']
 DEPRIVATE_ROLE_ID = ENV['DEPRIVATE_ROLE_ID']
+IS_TEST_MODE = ENV['IS_TEST_MODE'] == 'true'
 
 bot = Discordrb::Commands::CommandBot.new token: TOKEN, client_id: CLIENT_ID, prefix: '!ae '
 api = Discordrb::API::Server
 
 # メンション時の反応
 bot.mention do |event|
-  responce_array = ['馴れ馴れしくするな……', '寂しいのか？', 'zzz……ね、眠ってなどいない！', '随分と暇そうだな', 'いつでもお前たちを見ているぞ', '……物好きな奴だな']
-  r = rand(6)
-  event.respond responce_array[r]
+  response_array = ['馴れ馴れしくするな……', '寂しいのか？', 'zzz……ね、眠ってなどいない！', '随分と暇そうだな', 'いつでもお前たちを見ているぞ', '……物好きな奴だな']
+  event.respond response_array.sample
 end
 
 # ハッシュ検知時の反応
@@ -30,7 +30,11 @@ bot.message(contains: /^(?!.*http)(?!.*<@)(?!.*<#)(?!.*<:)(?!.*<a:)(?!.*<t:)(?!^
   member_role = JSON.parse(member_info)
   if member_role["roles"].include?(ISOLATE_ROLE_ID)
     event.respond 'さらなる罪を重ねるか……。ならば、粛清する！'
-    # api.remove_member("Bot #{TOKEN}", SERVER_ID, event.user.id)
+    if IS_TEST_MODE
+      event.respond '……テストモードか。命拾いしたな'
+    else
+      # api.remove_member("Bot #{TOKEN}", SERVER_ID, event.user.id)
+    end
   else
     api.add_member_role("Bot #{TOKEN}", SERVER_ID, event.user.id, ISOLATE_ROLE_ID)
     api.remove_member_role("Bot #{TOKEN}", SERVER_ID, event.user.id, DEPRIVATE_ROLE_ID)
