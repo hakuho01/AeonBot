@@ -19,9 +19,8 @@ api = Discordrb::API::Server
 
 # メンション時の反応
 bot.mention do |event|
-  responce_array = ['馴れ馴れしくするな……', '寂しいのか？', 'zzz……ね、眠ってなどいない！', '随分と暇そうだな', 'いつでもお前たちを見ているぞ', '……物好きな奴だな']
-  r = rand(6)
-  event.respond responce_array[r]
+  response_array = ['馴れ馴れしくするな……', '寂しいのか？', 'zzz……ね、眠ってなどいない！', '随分と暇そうだな', 'いつでもお前たちを見ているぞ', '……物好きな奴だな']
+  event.respond response_array.sample
 end
 
 # ハッシュ検知時の反応
