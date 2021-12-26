@@ -5,6 +5,9 @@ require 'discordrb'
 require 'dotenv'
 require 'json'
 
+# 定数ファイル読み込み
+require './config/constants'
+
 # 環境変数読み込み
 Dotenv.load
 TOKEN = ENV['TOKEN']
@@ -19,19 +22,19 @@ api = Discordrb::API::Server
 
 # メンション時の反応
 bot.mention do |event|
-  response_array = ['馴れ馴れしくするな……', '寂しいのか？', 'zzz……ね、眠ってなどいない！', '随分と暇そうだな', 'いつでもお前たちを見ているぞ', '……物好きな奴だな']
+  response_array = Constants::Speech::RESPONSE_MENTION
   event.respond response_array.sample
 end
 
 # ハッシュ検知時の反応
 bot.message(contains: /^(?!.*http)(?!.*<@)(?!.*<#)(?!.*<:)(?!.*<a:)(?!.*<t:)(?!^AA.+A$)[!-~]{19,}$/) do |event|
-  event.respond 'ハッシュ値やアクセストークンの疑いがある文字列を検知した。'
+  event.respond Constants::Speech::DETECT_HASH
   member_info = api.resolve_member("Bot #{TOKEN}", SERVER_ID, event.user.id)
   member_role = JSON.parse(member_info)
   if member_role["roles"].include?(ISOLATE_ROLE_ID)
-    event.respond 'さらなる罪を重ねるか……。ならば、粛清する！'
+    event.respond Constants::Speech::PURGE
     if IS_TEST_MODE
-      event.respond '……テストモードか。命拾いしたな'
+      event.respond Constants::Speech::PURGE_TEST_MODE
     else
       # api.remove_member("Bot #{TOKEN}", SERVER_ID, event.user.id)
     end
