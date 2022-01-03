@@ -22,7 +22,7 @@ api = Discordrb::API::Server
 
 # メンション時の反応
 bot.mention do |event|
-  event.respond "<@!#{event.user.id}>" + Constants::Speech::RESPONSE_MENTION.sample 
+  event.respond "<@!#{event.user.id}>" + Constants::Speech::RESPONSE_MENTION.sample
 end
 
 # ハッシュ検知時の反応
