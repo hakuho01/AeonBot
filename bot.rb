@@ -4,6 +4,7 @@
 require 'discordrb'
 require 'dotenv'
 require 'json'
+require 'net/http'
 
 # 定数ファイル読み込み
 require './config/constants'
@@ -21,6 +22,20 @@ bot = Discordrb::Commands::CommandBot.new token: TOKEN, client_id: CLIENT_ID, pr
 api = Discordrb::API::Server
 
 # メンション時の反応
+bot.mention(contains: /wiki/) do |event|
+  uri = URI.parse('https://ja.wikipedia.org/w/api.php?format=json&action=query&generator=random&grnnamespace=0&prop=info&inprop=url&indexpageids')
+  response = Net::HTTP.get_response(uri)
+  parsed_response = JSON.parse(response.body)
+  pageid = parsed_response['query']['pageids']
+  wikipedia_url = parsed_response['query']['pages'][pageid[0]]['fullurl']
+  wikipedia_title = parsed_response['query']['pages'][pageid[0]]['title']
+  event.send_embed do |embed|
+    embed.title = wikipedia_title
+    embed.url = wikipedia_url
+    embed.colour = 0xFFFFFF
+  end
+end
+
 bot.mention do |event|
   event.respond "<@!#{event.user.id}>" + Constants::Speech::RESPONSE_MENTION.sample
 end
