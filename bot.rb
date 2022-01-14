@@ -36,10 +36,12 @@ bot.mention do |event|
     parsed_response = JSON.parse(response.body)
     product = parsed_response['Items'].sample
     product_name = product['Item']['itemName']
+    product_price = product['Item']['itemPrice']
     product_image = product['Item']['mediumImageUrls'][0]['imageUrl']
     product_url = product['Item']['itemUrl']
     event.send_embed do |embed|
       embed.title = product_name
+      embed.description = "￥#{product_price}"
       embed.url = product_url
       embed.colour = 0xBF0000
       embed.image = Discordrb::Webhooks::EmbedImage.new(url: "#{product_image}")
