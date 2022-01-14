@@ -24,7 +24,27 @@ api = Discordrb::API::Server
 # メンション時の反応
 bot.mention do |event|
   message = event.message.to_s
-  if message.match?(/wiki/i)
+  if message.match?('楽天')
+    uri = URI.parse('https://app.rakuten.co.jp/services/api/IchibaGenre/Search/20140222?applicationId=1081731812152273419&genreId=0')
+    response = Net::HTTP.get_response(uri)
+    parsed_response = JSON.parse(response.body)
+    random_genre = parsed_response['children'].sample
+    genreid = random_genre['child']['genreId']
+    request_uri = 'https://app.rakuten.co.jp/services/api/IchibaItem/Ranking/20170628?format=json&genreId=' + genreid.to_s + '&applicationId=1081731812152273419'
+    uri = URI.parse(request_uri)
+    response = Net::HTTP.get_response(uri)
+    parsed_response = JSON.parse(response.body)
+    product = parsed_response['Items'].sample
+    product_name = product['Item']['itemName']
+    product_image = product['Item']['mediumImageUrls'][0]['imageUrl']
+    product_url = product['Item']['itemUrl']
+    event.send_embed do |embed|
+      embed.title = product_name
+      embed.url = product_url
+      embed.colour = 0xBF0000
+      embed.image = Discordrb::Webhooks::EmbedImage.new(url: "#{product_image}")
+    end
+  elsif message.match?(/wiki/i)
     uri = URI.parse('https://ja.wikipedia.org/w/api.php?format=json&action=query&generator=random&grnnamespace=0&prop=info&inprop=url&indexpageids')
     response = Net::HTTP.get_response(uri)
     parsed_response = JSON.parse(response.body)
