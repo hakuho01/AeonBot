@@ -61,3 +61,9 @@ module Constants
     PURGE_TEST_MODE = '……テストモード……。命拾いしたわね……。'
   end
 end
+
+module URLs
+  WIKIPEDIA = 'https://ja.wikipedia.org/w/api.php?format=json&action=query&generator=random&grnnamespace=0&prop=info&inprop=url&indexpageids'
+  RAKUTEN_GENRE = 'https://app.rakuten.co.jp/services/api/IchibaGenre/Search/20140222?applicationId=1081731812152273419&genreId=0'
+  RAKUTEN_RANKING = 'https://app.rakuten.co.jp/services/api/IchibaItem/Ranking/20170628?format=json&applicationId=1081731812152273419&genreId='
+end

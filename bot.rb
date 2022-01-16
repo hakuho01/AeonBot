@@ -21,19 +21,22 @@ IS_TEST_MODE = ENV['IS_TEST_MODE'] == 'true'
 bot = Discordrb::Commands::CommandBot.new token: TOKEN, client_id: CLIENT_ID, prefix: '!ae '
 api = Discordrb::API::Server
 
+# API通信
+def get_api(api_uri)
+  uri = URI.parse(api_uri)
+  response = Net::HTTP.get_response(uri)
+  JSON.parse(response.body)
+end
+
 # メンション時の反応
 bot.mention do |event|
   message = event.message.to_s
   if message.match?('楽天')
-    uri = URI.parse('https://app.rakuten.co.jp/services/api/IchibaGenre/Search/20140222?applicationId=1081731812152273419&genreId=0')
-    response = Net::HTTP.get_response(uri)
-    parsed_response = JSON.parse(response.body)
+    parsed_response = get_api(URLs::RAKUTEN_GENRE)
     random_genre = parsed_response['children'].sample
     genreid = random_genre['child']['genreId']
-    request_uri = 'https://app.rakuten.co.jp/services/api/IchibaItem/Ranking/20170628?format=json&genreId=' + genreid.to_s + '&applicationId=1081731812152273419'
-    uri = URI.parse(request_uri)
-    response = Net::HTTP.get_response(uri)
-    parsed_response = JSON.parse(response.body)
+    request_uri = URLs::RAKUTEN_RANKING + genreid.to_s
+    parsed_response = get_api(request_uri)
     product = parsed_response['Items'].sample
     product_name = product['Item']['itemName']
     product_price = product['Item']['itemPrice']
@@ -44,12 +47,10 @@ bot.mention do |event|
       embed.description = "￥#{product_price}"
       embed.url = product_url
       embed.colour = 0xBF0000
-      embed.image = Discordrb::Webhooks::EmbedImage.new(url: "#{product_image}")
+      embed.image = Discordrb::Webhooks::EmbedImage.new(url: product_image.to_s)
     end
   elsif message.match?(/wiki/i)
-    uri = URI.parse('https://ja.wikipedia.org/w/api.php?format=json&action=query&generator=random&grnnamespace=0&prop=info&inprop=url&indexpageids')
-    response = Net::HTTP.get_response(uri)
-    parsed_response = JSON.parse(response.body)
+    parsed_response = get_api(URLs::WIKIPEDIA)
     pageid = parsed_response['query']['pageids']
     wikipedia_url = parsed_response['query']['pages'][pageid[0]]['fullurl']
     wikipedia_title = parsed_response['query']['pages'][pageid[0]]['title']
@@ -73,7 +74,7 @@ bot.message(contains: /^(?!.*http)(?!.*<@)(?!.*<#)(?!.*<:)(?!.*<a:)(?!.*<t:)(?!^
     if IS_TEST_MODE
       event.respond Constants::Speech::PURGE_TEST_MODE
     else
-      # api.remove_member("Bot #{TOKEN}", SERVER_ID, event.user.id)
+      api.remove_member("Bot #{TOKEN}", SERVER_ID, event.user.id)
     end
   else
     api.add_member_role("Bot #{TOKEN}", SERVER_ID, event.user.id, ISOLATE_ROLE_ID)
