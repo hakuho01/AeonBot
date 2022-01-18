@@ -20,19 +20,24 @@ SERVER_ID = ENV['SERVER_ID']
 ISOLATE_ROLE_ID = ENV['ISOLATE_ROLE_ID']
 DEPRIVATE_ROLE_ID = ENV['DEPRIVATE_ROLE_ID']
 IS_TEST_MODE = ENV['IS_TEST_MODE'] == 'true'
+IS_LOCAL = ENV['IS_LOCAL']
 
 bot = Discordrb::Commands::CommandBot.new token: TOKEN, client_id: CLIENT_ID, prefix: '!ae '
 api = Discordrb::API::Server
 
 # メンション時の反応
 bot.mention do |event|
-  message = event.message.to_s
-  if message.match?('楽天')
-    rakuten(event)
-  elsif message.match?(/wiki/i)
-    wikipedia(event)
+  if IS_LOCAL
+    # 開発時はここに書くとサーバーで動いてる死天使本体が発火しなくなるはず
   else
-    event.respond "<@!#{event.user.id}>" + Constants::Speech::RESPONSE_MENTION.sample
+    message = event.message.to_s
+    if message.match?('楽天')
+      rakuten(event)
+    elsif message.match?(/wiki/i)
+      wikipedia(event)
+    else
+      event.respond "<@!#{event.user.id}>" + Constants::Speech::RESPONSE_MENTION.sample
+    end
   end
 end
 
