@@ -31,7 +31,11 @@ bot.mention do |event|
     # 開発時はここに書くとサーバーで動いてる死天使本体が発火しなくなるはず
   else
     message = event.message.to_s
-    if message.match?('楽天')
+    if message.match?(/おはよ|おは〜|おはー|good morning/i)
+      event.respond str.concat("<@!#{event.user.id}>",'おはよう。')
+    elsif message.match?(/おやす|おやす〜|おやすー|good night/i)
+      event.respond str.concat("<@!#{event.user.id}>",'おやすみ。')
+    elsif message.match?('楽天')
       rakuten(event)
     elsif message.match?(/wiki/i)
       wikipedia(event)
