@@ -57,4 +57,16 @@ describe 'moc練習' do
       controller.handle_mention(event)
     end
   end
+
+  context "その他のメンションが来たとき" do
+    before do
+      allow(event).to receive_message_chain(:message, :to_s).and_return("可愛いね")
+    end
+
+    it 'ランダムな返答をする' do
+      controller = BotController.new
+      expect(service).to receive(:say_random).with(event)
+      controller.handle_mention(event)
+    end
+  end
 end
