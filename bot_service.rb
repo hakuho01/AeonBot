@@ -17,11 +17,11 @@ class BotService
     @discord_api = Discordrb::API::Server
   end
 
-  def respond_good_morning(event)
+  def say_good_morning(event)
     event.respond "<@!#{event.user.id}>" + 'おはよう。'
   end
 
-  def respond_good_night(event)
+  def say_good_night(event)
     event.respond "<@!#{event.user.id}>" + 'おやすみ。'
   end
 
@@ -33,7 +33,7 @@ class BotService
     wikipedia event
   end
 
-  def respond_mention(event)
+  def say_random(event)
     event.respond "<@!#{event.user.id}>" + Constants::Speech::RESPONSE_MENTION.sample
   end
 

@@ -18,15 +18,15 @@ class BotController
     else
       message = event.message.to_s
       if message.match?(/おはよ|おは〜|おはー|good morning/i)
-        @service.respond_good_morning(event)
+        @service.say_good_morning(event)
       elsif message.match?(/おやす|おやす〜|おやすー|good night/i)
-        @service.respond_good_night(event)
+        @service.say_good_night(event)
       elsif message.match?('楽天')
         @service.suggest_rakuten(event)
       elsif message.match?(/wiki/i)
         @service.suggest_wikipedia(event)
       else
-        @service.respond_mention(event)
+        @service.say_random(event)
       end
     end
   end
