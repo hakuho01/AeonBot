@@ -1,3 +1,5 @@
+require 'net/http'
+
 # API通信
 def get_api(api_uri)
   uri = URI.parse(api_uri)
