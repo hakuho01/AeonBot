@@ -5,6 +5,7 @@ require 'json'
 
 require './config/constants'
 require './func/methods'
+require './reminder_repository'
 
 Dotenv.load
 SERVER_ID = ENV['SERVER_ID']
@@ -14,7 +15,9 @@ IS_TEST_MODE = ENV['IS_TEST_MODE'] == 'true'
 
 class BotService
   def initialize
-    @discord_api = Discordrb::API::Server
+    @server_api = Discordrb::API::Server
+    @channel_api = Discordrb::API::Channel
+    @reminder_repository = ReminderRepository.new
   end
 
   def say_good_morning(event)
@@ -39,19 +42,43 @@ class BotService
 
   def judge_detected_hash(event)
     event.respond Constants::Speech::DETECT_HASH
-    member_info = @discord_api.resolve_member("Bot #{TOKEN}", SERVER_ID, event.user.id)
+    member_info = @server_api.resolve_member("Bot #{TOKEN}", SERVER_ID, event.user.id)
     member_role = JSON.parse(member_info)
     if member_role["roles"].include?(ISOLATE_ROLE_ID)
       event.respond Constants::Speech::PURGE
       if IS_TEST_MODE
         event.respond Constants::Speech::PURGE_TEST_MODE
       else
-        @discord_api.remove_member("Bot #{TOKEN}", SERVER_ID, event.user.id)
+        @server_api.remove_member("Bot #{TOKEN}", SERVER_ID, event.user.id)
       end
     else
-      @discord_api.add_member_role("Bot #{TOKEN}", SERVER_ID, event.user.id, ISOLATE_ROLE_ID)
-      @discord_api.remove_member_role("Bot #{TOKEN}", SERVER_ID, event.user.id, DEPRIVATE_ROLE_ID)
+      @server_api.add_member_role("Bot #{TOKEN}", SERVER_ID, event.user.id, ISOLATE_ROLE_ID)
+      @server_api.remove_member_role("Bot #{TOKEN}", SERVER_ID, event.user.id, DEPRIVATE_ROLE_ID)
     end
   end
 
+  def remind(reminder)
+    message = "<@!#{reminder.user_id}>" + reminder.message
+    @channel_api.create_message("Bot #{TOKEN}", reminder.channel_id, message)
+  end
+
+  def fetch_reminder_list
+    return reminder_list = @reminder_repository.fetch_all
+  end
+
+  def add_reminder(date_str, time_str, message, event)
+    reminder = Reminder.new(
+      @reminder_repository.get_next_id,
+      Time.strptime(date_str + time_str + '+9:00', '%Y/%m/%d%H:%M%z'),
+      message,
+      event.channel.id,
+      event.user.id
+    )
+    @reminder_repository.add(reminder)
+    event.respond "<@!#{event.user.id}>" + "#{reminder.time.strftime('%Y年%-m月%-d日の%-H時%-M分')}に「#{message}」とリマインドする。……覚えた。"
+  end
+
+  def save_reminder_list(reminder_list)
+    @reminder_repository.save_all(reminder_list)
+  end
 end
