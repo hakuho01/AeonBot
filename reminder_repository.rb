@@ -5,6 +5,8 @@ Dotenv.load
 REMINDER_DATA_CHANNEL_ID = ENV['REMINDER_DATA_CHANNEL_ID']
 REMINDER_DATA_MESSAGE_ID = ENV['REMINDER_DATA_MESSAGE_ID']
 
+# グローバル変数でリマインダ一覧を管理している
+# 他のクラスから直接参照せず、かならずReminderRepositoryのメソッドを使用すること
 $reminder_list = []
 $reminder_next_id = 0
 
@@ -15,6 +17,8 @@ class ReminderRepository
 
   def fetch_all
     $reminder_list = read
+    # そのまま渡すと直接書き換えられてしまうため、コピーオブジェクトを渡す
+    # dumpを経由することで深いコピーにしている
     dump = Marshal.dump($reminder_list)
     return Marshal.load(dump)
   end
@@ -26,6 +30,7 @@ class ReminderRepository
 
   def get_next_id
     $reminder_next_id += 1
+    # そのまま渡すと直接書き換えられてしまうため、コピーオブジェクトを渡す
     return $reminder_next_id.dup
   end
 
@@ -37,6 +42,7 @@ class ReminderRepository
   private
 
   def read
+    # 保存用メッセージから読み込み
     response = @channel_api.message("Bot #{TOKEN}", REMINDER_DATA_CHANNEL_ID, REMINDER_DATA_MESSAGE_ID)
     csv = JSON.parse(response.body)['content']
 
