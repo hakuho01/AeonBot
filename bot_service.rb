@@ -5,6 +5,7 @@ require 'json'
 
 require './config/constants'
 require './func/methods'
+require './util/time_util'
 require './reminder_repository'
 
 Dotenv.load
@@ -69,7 +70,7 @@ class BotService
   def add_reminder(date_str, time_str, message, event)
     reminder = Reminder.new(
       @reminder_repository.get_next_id,
-      Time.strptime(date_str + time_str + '+9:00', '%Y/%m/%d%H:%M%z'),
+      TimeUtil::parse_date_time(date_str, time_str),
       message,
       event.channel.id,
       event.user.id

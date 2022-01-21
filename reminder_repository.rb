@@ -1,4 +1,5 @@
 require 'csv'
+require './util/time_util'
 
 Dotenv.load
 REMINDER_DATA_CHANNEL_ID = ENV['REMINDER_DATA_CHANNEL_ID']
@@ -13,7 +14,7 @@ class ReminderRepository
   end
 
   def fetch_all
-    $reminder_list, $reminder_next_id = read
+    $reminder_list = read
     dump = Marshal.dump($reminder_list)
     return Marshal.load(dump)
   end
@@ -43,19 +44,15 @@ class ReminderRepository
     reminder_last_id = 0
     if csv != "none"
       CSV.parse(csv).each do |row|
-        reminder_id = row[0].to_i
-        time = Time.parse(row[1])
-        message = row[2]
-        channel_id = row[3]
-        user_id = row[4]
-        done = row[5] == 'true'
-        reminder_list.push(Reminder.new(reminder_id, time, message, channel_id, user_id, done))
-        reminder_last_id = row[0].to_i
+        time = TimeUtil::parse_min_time(row[0])
+        message = row[1]
+        channel_id = row[2]
+        user_id = row[3]
+        reminder_list.push(Reminder.new(reminder_last_id+1, time, message, channel_id, user_id, false))
       end
     end
-    reminder_next_id = reminder_last_id + 1
 
-    return reminder_list, reminder_next_id
+    return reminder_list
   end
 
   def write(reminder_list)
@@ -63,12 +60,10 @@ class ReminderRepository
       reminder_list.each do |reminder|
         if not reminder.done
           csv.add_row([
-            reminder.reminder_id,
-            reminder.time,
+            TimeUtil::format_min_time(reminder.time),
             reminder.message,
             reminder.channel_id,
-            reminder.user_id,
-            reminder.done
+            reminder.user_id
           ])
         end
       end
