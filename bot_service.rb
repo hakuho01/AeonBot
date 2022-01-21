@@ -59,7 +59,7 @@ class BotService
   end
 
   def remind(reminder)
-    message = "<@!#{reminder.user_id}>" + reminder.message
+    message = "<@!#{reminder.user_id}>" + Constants::Speech::REMIND % reminder.message
     @channel_api.create_message("Bot #{TOKEN}", reminder.channel_id, message)
   end
 
@@ -76,7 +76,11 @@ class BotService
       event.user.id
     )
     @reminder_repository.add(reminder)
-    event.respond "<@!#{event.user.id}>" + "#{reminder.time.strftime('%Y年%-m月%-d日の%-H時%-M分')}に「#{message}」とリマインドする。……覚えた。"
+    event.respond "<@!#{event.user.id}>" + Constants::Speech::ADD_REMINDER % [reminder.time.strftime('%Y年%-m月%-d日の%-H時%-M分'), message]
+  end
+
+  def deny_too_long_reminder(event)
+    event.respond "<@!#{event.user.id}>" + Constants::Speech::DENY_TOO_LONG_REMINDER
   end
 
   def save_reminder_list(reminder_list)
