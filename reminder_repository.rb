@@ -13,10 +13,14 @@ $reminder_next_id = 0
 class ReminderRepository
   def initialize
     @channel_api = Discordrb::API::Channel
+    @never_fetched = true  # 初回のみ読み込みを行うためのフラグ
   end
 
   def fetch_all
-    $reminder_list = read
+    if @never_fetched
+      $reminder_list = read
+      @never_fetched = false
+    end
     # そのまま渡すと直接書き換えられてしまうため、コピーオブジェクトを渡す
     # dumpを経由することで深いコピーにしている
     dump = Marshal.dump($reminder_list)

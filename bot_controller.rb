@@ -53,8 +53,8 @@ class BotController
   end
 
   def wait_reminder
-    reminder_list = @service.fetch_reminder_list
     loop do
+      reminder_list = @service.fetch_reminder_list
       now = Time.now
       reminder_list.each do |reminder|
         if not reminder.done and now > reminder.time
