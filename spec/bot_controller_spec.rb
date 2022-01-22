@@ -106,6 +106,16 @@ describe 'BotControllerのテスト' do
     let(:reminder_already_sent) { Reminder.new(1, Time.now, "test", "test", "test", true) }
     let(:reminder_not_yet) { Reminder.new(1, Time.now+3600, "test", "test", "test", false) }
 
+    before do
+      allow(service).to receive(:fetch_reminder_list).and_return([])
+    end
+
+    it "必ずリマインダリストを取得する" do
+      controller = BotController.new
+      expect(service).to receive(:fetch_reminder_list)
+      controller.check_reminder
+    end
+
     context "実行すべきリマインダがあったら" do
       before do
         allow(service).to receive(:fetch_reminder_list).and_return([reminder_to_send])
