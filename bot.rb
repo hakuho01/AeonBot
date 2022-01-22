@@ -35,6 +35,9 @@ end
 bot.run(true)
 
 # リマインダ起動
-controller.wait_reminder
+loop do
+  controller.check_reminder
+  sleep 30
+end
 
 bot.join

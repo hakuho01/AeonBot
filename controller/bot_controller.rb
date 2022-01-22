@@ -52,19 +52,16 @@ class BotController
     end
   end
 
-  def wait_reminder
-    loop do
-      reminder_list = @service.fetch_reminder_list
-      now = Time.now
-      reminder_list.each do |reminder|
-        if not reminder.done and now > reminder.time
-          @service.remind(reminder)
-          reminder.done = true
-          @service.save_reminder_list(reminder_list)
-          sleep 1
-        end
+  def check_reminder
+    reminder_list = @service.fetch_reminder_list
+    now = Time.now
+    reminder_list.each do |reminder|
+      if not reminder.done and now > reminder.time
+        @service.remind(reminder)
+        reminder.done = true
+        @service.save_reminder_list(reminder_list)
+        sleep 1
       end
-      sleep 30
     end
   end
 end
