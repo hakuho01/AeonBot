@@ -6,7 +6,7 @@ require 'dotenv'
 require 'json'
 require 'time'
 
-require './bot_controller'
+require './controller/bot_controller'
 require './model/reminder'
 
 # 環境変数読み込み

@@ -1,7 +1,7 @@
 require 'discordrb'
 require 'dotenv'
 
-require './bot_service'
+require './service/bot_service'
 
 Dotenv.load
 IS_LOCAL = ENV['IS_LOCAL']

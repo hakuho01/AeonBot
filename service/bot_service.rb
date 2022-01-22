@@ -6,7 +6,7 @@ require 'json'
 require './config/constants'
 require './func/methods'
 require './util/time_util'
-require './reminder_repository'
+require './repository/reminder_repository'
 
 Dotenv.load
 SERVER_ID = ENV['SERVER_ID']
