@@ -22,10 +22,6 @@ bot.mention do |event|
   controller.handle_mention(event)
 end
 
-bot.command :remind do |event, *args|
-  controller.handle_command(event, args, :remind)
-end
-
 # ハッシュ検知時の反応
 bot.message(contains: /^(?!.*http)(?!.*<@)(?!.*<#)(?!.*<:)(?!.*<a:)(?!.*<t:)(?!^AA.+A$)[!-~]{19,}$/) do |event|
   controller.handle_message(event, :hash)
