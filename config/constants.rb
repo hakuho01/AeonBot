@@ -59,6 +59,11 @@ module Constants
     DETECT_HASH = 'ハッシュ値やアクセストークンの疑いがある文字列を、検出……この空間においては、許可されない……。'
     PURGE = '警告はした……あなたの罪、『黒衣の死天使』が粛清する……！'
     PURGE_TEST_MODE = '……テストモード……。命拾いしたわね……。'
+
+    # リマインダ関連
+    ADD_REMINDER = '%sに「%s」とリマインドする。……覚えた。'
+    DENY_TOO_LONG_REMINDER = '……長すぎる。覚えられない。'
+    REMIND = '「%s」……あなたは覚えてる？'
   end
 end
 
