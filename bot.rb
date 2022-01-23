@@ -4,10 +4,8 @@
 require 'discordrb'
 require 'dotenv'
 require 'json'
-require 'time'
 
-require './controller/bot_controller'
-require './model/reminder'
+require './bot_controller'
 
 # 環境変数読み込み
 Dotenv.load
@@ -22,9 +20,6 @@ bot.mention do |event|
   controller.handle_mention(event)
 end
 
-bot.command :remind do |event, *args|
-  controller.handle_command(event, args, :remind)
-end
 
 # ハッシュ検知時の反応
 bot.message(contains: /^(?!.*http)(?!.*<@)(?!.*<#)(?!.*<:)(?!.*<a:)(?!.*<t:)(?!^AA.+A$)[!-~]{19,}$/) do |event|
@@ -32,12 +27,4 @@ bot.message(contains: /^(?!.*http)(?!.*<@)(?!.*<#)(?!.*<:)(?!.*<a:)(?!.*<t:)(?!^
 end
 
 # bot起動
-bot.run(true)
-
-# リマインダ起動
-loop do
-  controller.check_reminder
-  sleep 30
-end
-
-bot.join
+bot.run
