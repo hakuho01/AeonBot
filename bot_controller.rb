@@ -7,14 +7,15 @@ Dotenv.load
 IS_LOCAL = ENV['IS_LOCAL']
 
 class BotController
-
   def initialize
     @service = BotService.new
   end
 
   def handle_mention(event)
     if IS_LOCAL
-      # 開発時はここに書くとサーバーで動いてる死天使本体が発火しなくなるはず
+      # 開発時はここに書くとローカルの死天使が余計な発火しなくなるはず
+      fps_channnel = event.user.voice_channel
+      puts fps_channnel
     else
       message = event.message.to_s
       if message.match?(/おはよ|おは〜|おはー|good morning/i)
