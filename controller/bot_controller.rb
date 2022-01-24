@@ -38,7 +38,11 @@ class BotController
       time = args[1]
       message = args[2]
       if message.length <= 40  # TODO: validationはどこかに切り出したい
-        @service.add_reminder(date, time, message, event)
+        begin
+          @service.add_reminder(date, time, message, event)
+        rescue
+          @service.deny_not_setup_reminder(event)
+        end
       else
         @service.deny_too_long_reminder(event)
       end

@@ -17,7 +17,7 @@ class ReminderRepository
   end
 
   def fetch_all
-    if @never_fetched
+    if @never_fetched and REMINDER_DATA_CHANNEL_ID != nil and REMINDER_DATA_MESSAGE_ID != nil
       $reminder_list = read
       @never_fetched = false
     end
@@ -28,17 +28,26 @@ class ReminderRepository
   end
 
   def add(reminder)
+    if @never_fetched
+      raise ReminderRepositoryNotSetUpError
+    end
     $reminder_list.push(reminder)
     write($reminder_list)
   end
 
   def get_next_id
+    if @never_fetched
+      raise ReminderRepositoryNotSetUpError
+    end
     $reminder_next_id += 1
     # そのまま渡すと直接書き換えられてしまうため、コピーオブジェクトを渡す
     return $reminder_next_id.dup
   end
 
   def save_all(reminder_list)
+    if @never_fetched
+      raise ReminderRepositoryNotSetUpError
+    end
     $reminder_list = reminder_list
     write($reminder_list)
   end
@@ -54,10 +63,15 @@ class ReminderRepository
     reminder_last_id = 0
     if csv != "none"
       CSV.parse(csv).each do |row|
-        time = TimeUtil::parse_min_time(row[0])
-        message = row[1]
-        channel_id = row[2]
-        user_id = row[3]
+        # リマインダ情報として読み取れない行があったらその時点で読み込み終了する
+        begin
+          time = TimeUtil::parse_min_time(row[0])
+          message = row[1]
+          channel_id = row[2]
+          user_id = row[3]
+        rescue
+          break
+        end
         reminder_list.push(Reminder.new(reminder_last_id+1, time, message, channel_id, user_id, false))
       end
     end
@@ -80,5 +94,10 @@ class ReminderRepository
     end
 
     @channel_api.edit_message("Bot #{TOKEN}", REMINDER_DATA_CHANNEL_ID, REMINDER_DATA_MESSAGE_ID, csv == "" ? "none" : csv)
+  end
+end
+
+class ReminderRepositoryNotSetUpError < StandardError
+  def initialize(msg="Reminder repository has not set up yet. Cannot use reminder function.")
   end
 end

@@ -64,7 +64,7 @@ class BotService
   end
 
   def fetch_reminder_list
-    return reminder_list = @reminder_repository.fetch_all
+      return @reminder_repository.fetch_all
   end
 
   def add_reminder(date_str, time_str, message, event)
@@ -81,6 +81,10 @@ class BotService
 
   def deny_too_long_reminder(event)
     event.respond "<@!#{event.user.id}>" + Constants::Speech::DENY_TOO_LONG_REMINDER
+  end
+
+  def deny_not_setup_reminder(event)
+    event.respond "<@!#{event.user.id}>" + Constants::Speech::DEBY_NOT_SETUP_REMINDER
   end
 
   def save_reminder_list(reminder_list)

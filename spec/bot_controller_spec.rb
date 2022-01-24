@@ -97,6 +97,21 @@ describe 'BotControllerのテスト' do
           controller.handle_command(event, [date, time, message], :remind)
         end
       end
+
+      context "未セットアップエラーが発生したら" do
+        before do
+          allow(service).to receive(:add_reminder).and_raise(ReminderRepositoryNotSetUpError)
+        end
+
+        it '現在は登録できない旨の返答を行う' do
+          controller = BotController.new
+          date = "2022/1/23"
+          time = "4:56"
+          message = "0123456789abcdefghijあいうえおかきくけこアイウエオカキクケコ"
+          expect(service).to receive(:deny_not_setup_reminder).with(event)
+          controller.handle_command(event, [date, time, message], :remind)
+        end
+      end
     end
   end
 
