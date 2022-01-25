@@ -2,7 +2,6 @@ require 'singleton'
 require 'discordrb'
 require 'dotenv'
 require 'json'
-require 'mini_magick'
 
 require './config/constants'
 require './func/methods'
@@ -90,32 +89,5 @@ class BotService
 
   def save_reminder_list(reminder_list)
     @reminder_repository.save_all(reminder_list)
-  end
-
-  def make_prof(args, event)
-    image = MiniMagick::Image.open('src/prof_template.png')
-    profile_data = args
-    prof_items = [:name, :sex, :adrs]
-    ary = [prof_items, profile_data].transpose
-    profile_hash = Hash[*ary.flatten]
-    profile_hash[:name].to_s.slice!(0..4)
-    profile_hash[:sex].to_s.slice!(0..3)
-    profile_hash[:adrs].to_s.slice!(0..7)
-    profile_img_url = event.user.avatar_url
-    profile_img = MiniMagick::Image.open(profile_img_url)
-    text_added_image = image.combine_options do |c|
-      c.fill '#0f0f0f'
-      c.gravity 'northwest'
-      c.pointsize 60
-      c.annotate '+380+50,0', profile_hash[:name]
-      c.annotate '+380+250,0', profile_hash[:sex]
-      c.annotate '+70+400,0', profile_hash[:adrs]
-    end
-    composite_image = text_added_image.composite(profile_img) do |config|
-      config.compose 'Over'
-      config.gravity 'northwest'
-      config.geometry '+50+50'
-    end
-    composite_image.write 'output.png'
   end
 end
