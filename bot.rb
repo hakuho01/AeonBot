@@ -29,7 +29,7 @@ bot.command :remind do |event, *args|
 end
 
 bot.command :prof do |event, *args|
-  controller.handle_command(event, args, :profile)
+  bot_controller.handle_command(event, args, :profile)
 end
 
 # ハッシュ検知時の反応

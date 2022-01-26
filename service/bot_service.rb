@@ -2,6 +2,7 @@ require 'singleton'
 require 'discordrb'
 require 'dotenv'
 require 'json'
+require 'mini_magick'
 
 require './config/constants'
 require './func/methods'
