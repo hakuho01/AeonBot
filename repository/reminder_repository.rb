@@ -2,8 +2,8 @@ require 'csv'
 require './util/time_util'
 
 Dotenv.load
-REMINDER_DATA_CHANNEL_ID = ENV['REMINDER_DATA_CHANNEL_ID']
-REMINDER_DATA_MESSAGE_ID = ENV['REMINDER_DATA_MESSAGE_ID']
+REMINDER_DATA_CHANNEL_ID = ENV['REMINDER_DATA_CHANNEL_ID'].to_i
+REMINDER_DATA_MESSAGE_ID = ENV['REMINDER_DATA_MESSAGE_ID'].to_i
 
 # グローバル変数でリマインダ一覧を管理している
 # 他のクラスから直接参照せず、かならずReminderRepositoryのメソッドを使用すること
@@ -11,8 +11,8 @@ $reminder_list = []
 $reminder_next_id = 0
 
 class ReminderRepository
-  def initialize
-    @channel_api = Discordrb::API::Channel
+  def initialize(bot)
+    @bot = bot
     @never_fetched = true  # 初回のみ読み込みを行うためのフラグ
   end
 
@@ -56,9 +56,7 @@ class ReminderRepository
 
   def read
     # 保存用メッセージから読み込み
-    response = @channel_api.message("Bot #{TOKEN}", REMINDER_DATA_CHANNEL_ID, REMINDER_DATA_MESSAGE_ID)
-    csv = JSON.parse(response.body)['content']
-
+    csv = @bot.channel(REMINDER_DATA_CHANNEL_ID).message(REMINDER_DATA_MESSAGE_ID).content
     reminder_list = []
     reminder_last_id = 0
     if csv != "none"
@@ -92,8 +90,7 @@ class ReminderRepository
         end
       end
     end
-
-    @channel_api.edit_message("Bot #{TOKEN}", REMINDER_DATA_CHANNEL_ID, REMINDER_DATA_MESSAGE_ID, csv == "" ? "none" : csv)
+    @bot.channel(REMINDER_DATA_CHANNEL_ID).message(REMINDER_DATA_MESSAGE_ID).edit(csv == "" ? "none" : csv)
   end
 end
 

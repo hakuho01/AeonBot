@@ -9,16 +9,15 @@ require './util/time_util'
 require './repository/reminder_repository'
 
 Dotenv.load
-SERVER_ID = ENV['SERVER_ID']
-ISOLATE_ROLE_ID = ENV['ISOLATE_ROLE_ID']
-DEPRIVATE_ROLE_ID = ENV['DEPRIVATE_ROLE_ID']
+SERVER_ID = ENV['SERVER_ID'].to_i
+ISOLATE_ROLE_ID = ENV['ISOLATE_ROLE_ID'].to_i
+DEPRIVATE_ROLE_ID = ENV['DEPRIVATE_ROLE_ID'].to_i
 IS_TEST_MODE = ENV['IS_TEST_MODE'] == 'true'
 
 class BotService
-  def initialize
-    @server_api = Discordrb::API::Server
-    @channel_api = Discordrb::API::Channel
-    @reminder_repository = ReminderRepository.new
+  def initialize(bot)
+    @reminder_repository = ReminderRepository.new(bot)
+    @bot = bot
   end
 
   def say_good_morning(event)
@@ -43,24 +42,24 @@ class BotService
 
   def judge_detected_hash(event)
     event.respond Constants::Speech::DETECT_HASH
-    member_info = @server_api.resolve_member("Bot #{TOKEN}", SERVER_ID, event.user.id)
-    member_role = JSON.parse(member_info)
-    if member_role["roles"].include?(ISOLATE_ROLE_ID)
+    server = @bot.server(SERVER_ID)
+    member = server.member(event.user.id)
+    if member.roles.include?(ISOLATE_ROLE_ID)
       event.respond Constants::Speech::PURGE
       if IS_TEST_MODE
         event.respond Constants::Speech::PURGE_TEST_MODE
       else
-        @server_api.remove_member("Bot #{TOKEN}", SERVER_ID, event.user.id)
+        server.kick(event.user.id)
       end
     else
-      @server_api.add_member_role("Bot #{TOKEN}", SERVER_ID, event.user.id, ISOLATE_ROLE_ID)
-      @server_api.remove_member_role("Bot #{TOKEN}", SERVER_ID, event.user.id, DEPRIVATE_ROLE_ID)
+      member.add_role(ISOLATE_ROLE_ID)
+      member.remove_role(DEPRIVATE_ROLE_ID)
     end
   end
 
   def remind(reminder)
     message = "<@!#{reminder.user_id}>" + Constants::Speech::REMIND % reminder.message
-    @channel_api.create_message("Bot #{TOKEN}", reminder.channel_id, message)
+    @bot.channel(reminder.channel_id).send_message(message)
   end
 
   def fetch_reminder_list
@@ -84,7 +83,7 @@ class BotService
   end
 
   def deny_not_setup_reminder(event)
-    event.respond "<@!#{event.user.id}>" + Constants::Speech::DEBY_NOT_SETUP_REMINDER
+    event.respond "<@!#{event.user.id}>" + Constants::Speech::DENY_NOT_SETUP_REMINDER
   end
 
   def save_reminder_list(reminder_list)

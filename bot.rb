@@ -15,7 +15,7 @@ TOKEN = ENV['TOKEN']
 CLIENT_ID = ENV['CLIENT_ID']
 
 bot = Discordrb::Commands::CommandBot.new token: TOKEN, client_id: CLIENT_ID, prefix: '!ae '
-controller = BotController.new
+controller = BotController.new(bot)
 
 # メンション時の反応
 bot.mention do |event|
