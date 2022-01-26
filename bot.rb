@@ -7,28 +7,30 @@ require 'json'
 require 'time'
 
 require './controller/bot_controller'
+require './controller/daily_task_controller'
 require './model/reminder'
 
 # 環境変数読み込み
 Dotenv.load
 TOKEN = ENV['TOKEN']
-CLIENT_ID = ENV['CLIENT_ID']
+CLIENT_ID = ENV['CLIENT_ID'].to_i
 
 bot = Discordrb::Commands::CommandBot.new token: TOKEN, client_id: CLIENT_ID, prefix: '!ae '
-controller = BotController.new(bot)
+bot_controller = BotController.new(bot)
+daily_task_controller = DailyTaskController.new(bot)
 
 # メンション時の反応
 bot.mention do |event|
-  controller.handle_mention(event)
+  bot_controller.handle_mention(event)
 end
 
 bot.command :remind do |event, *args|
-  controller.handle_command(event, args, :remind)
+  bot_controller.handle_command(event, args, :remind)
 end
 
 # ハッシュ検知時の反応
 bot.message(contains: /^(?!.*http)(?!.*<@)(?!.*<#)(?!.*<:)(?!.*<a:)(?!.*<t:)(?!^AA.+A$)[!-~]{19,}$/) do |event|
-  controller.handle_message(event, :hash)
+  bot_controller.handle_message(event, :hash)
 end
 
 # bot起動
@@ -36,7 +38,8 @@ bot.run(true)
 
 # リマインダ起動
 loop do
-  controller.check_reminder
+  bot_controller.check_reminder
+  daily_task_controller.check_daily_task
   sleep 30
 end
 
