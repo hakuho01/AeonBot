@@ -37,7 +37,7 @@ class BotController
     when :remind then
       date = args[0]
       time = args[1]
-      message = args.slice(2..args.length-1).join(" ")
+      message = args[2]
       if message.length <= 40  # TODO: validationはどこかに切り出したい
         begin
           @service.add_reminder(date, time, message, event)
