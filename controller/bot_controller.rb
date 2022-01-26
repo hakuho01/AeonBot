@@ -45,6 +45,8 @@ class BotController
       else
         @service.deny_too_long_reminder(event)
       end
+    when :profile then
+      @service.make_prof(args, event)
     end
   end
 
