@@ -59,7 +59,7 @@ class BotController
 
   def check_reminder
     reminder_list = @service.fetch_reminder_list
-    now = TimeUtil.now
+    now = Time.now
     reminder_list.each do |reminder|
       if not reminder.done and now >= reminder.time
         @service.remind(reminder)

@@ -117,9 +117,9 @@ describe 'BotControllerのテスト' do
 
   context "リマインダのチェックが走ったとき" do
 
-    let(:reminder_to_send) { Reminder.new(1, TimeUtil.now, "test", "test", "test", false) }
-    let(:reminder_already_sent) { Reminder.new(1, TimeUtil.now, "test", "test", "test", true) }
-    let(:reminder_not_yet) { Reminder.new(1, TimeUtil.now+3600, "test", "test", "test", false) }
+    let(:reminder_to_send) { Reminder.new(1, Time.now, "test", "test", "test", false) }
+    let(:reminder_already_sent) { Reminder.new(1, Time.now, "test", "test", "test", true) }
+    let(:reminder_not_yet) { Reminder.new(1, Time.now+3600, "test", "test", "test", false) }
 
     before do
       allow(service).to receive(:fetch_reminder_list).and_return([])
