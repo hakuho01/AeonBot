@@ -42,6 +42,19 @@ class BotService
     wikipedia event
   end
 
+  def challenge_gacha(event)
+    emojis = event.server.emoji.to_a
+    results = []
+    10.times do
+      results.push(emojis.sample)
+    end
+    gacha_result = []
+    results.each do |n|
+      gacha_result.push(n[1])
+    end
+    event.respond gacha_result.join
+  end
+
   def say_random(event)
     event.respond "<@!#{event.user.id}>" + Constants::Speech::RESPONSE_MENTION.sample
   end
