@@ -42,6 +42,19 @@ class BotService
     wikipedia event
   end
 
+  def challenge_gacha(event)
+    emojis = event.server.emoji.to_a
+    results = []
+    10.times do
+      results.push(emojis.sample)
+    end
+    gacha_result = []
+    results.each do |n|
+      gacha_result.push(n[1])
+    end
+    event.respond gacha_result.join
+  end
+
   def say_random(event)
     event.respond "<@!#{event.user.id}>" + Constants::Speech::RESPONSE_MENTION.sample
   end
@@ -113,7 +126,7 @@ class BotService
     profile_hash[:food].to_s.slice!(0..6)
     profile_hash[:music].to_s.slice!(0..5)
     profile_hash[:free_space].to_s.slice!(0..4)
-    user_name = event.user.username
+    user_name = event.user.display_name
     created_time = event.user.creation_time
     profile_img_url = event.user.avatar_url
     profile_img = MiniMagick::Image.open(profile_img_url)
