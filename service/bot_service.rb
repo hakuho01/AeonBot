@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'singleton'
 require 'discordrb'
 require 'dotenv'
@@ -67,7 +69,7 @@ class BotService
   end
 
   def fetch_reminder_list
-      return @reminder_repository.fetch_all
+    @reminder_repository.fetch_all
   end
 
   def add_reminder(date_str, time_str, message, event)
