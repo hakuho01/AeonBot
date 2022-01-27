@@ -113,7 +113,7 @@ class BotService
     profile_hash[:food].to_s.slice!(0..6)
     profile_hash[:music].to_s.slice!(0..5)
     profile_hash[:free_space].to_s.slice!(0..4)
-    user_name = event.user.username
+    user_name = event.user.display_name
     created_time = event.user.creation_time
     profile_img_url = event.user.avatar_url
     profile_img = MiniMagick::Image.open(profile_img_url)
