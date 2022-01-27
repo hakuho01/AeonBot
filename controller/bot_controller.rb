@@ -20,6 +20,8 @@ class BotController
         @service.say_good_morning(event)
       elsif message.match?(/おやす|おやす〜|おやすー|good night/i)
         @service.say_good_night(event)
+      elsif message.match?(/ガチャ|10連/)
+        @service.challenge_gacha(event)
       elsif message.match?('楽天')
         @service.suggest_rakuten(event)
       elsif message.match?(/wiki/i)
