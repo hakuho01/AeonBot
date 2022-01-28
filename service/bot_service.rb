@@ -27,11 +27,11 @@ class BotService
   end
 
   def say_good_morning(event)
-    event.respond "<@!#{event.user.id}>" + 'おはよう。'
+    event.respond "<@!#{event.user.id}>" << 'おはよう。'
   end
 
   def say_good_night(event)
-    event.respond "<@!#{event.user.id}>" + 'おやすみ。'
+    event.respond "<@!#{event.user.id}>" << 'おやすみ。'
   end
 
   def suggest_rakuten(event)
