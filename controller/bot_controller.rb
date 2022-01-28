@@ -53,7 +53,7 @@ class BotController
   end
 
   def handle_message(event, message_type)
-    case message_type 
+    case message_type
     when :hash then
       @service.judge_detected_hash(event)
     end
@@ -63,7 +63,7 @@ class BotController
     reminder_list = @service.fetch_reminder_list
     now = TimeUtil.now
     reminder_list.each do |reminder|
-      if not reminder.done and now >= reminder.time
+      if not reminder.done && now >= reminder.time
         @service.remind(reminder)
         reminder.done = true
         @service.save_reminder_list(reminder_list)
