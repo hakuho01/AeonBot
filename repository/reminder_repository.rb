@@ -59,7 +59,7 @@ class ReminderRepository
     csv = @bot.channel(REMINDER_DATA_CHANNEL_ID).message(REMINDER_DATA_MESSAGE_ID).content
     reminder_list = []
     reminder_last_id = 0
-    if csv != "none"
+    if csv != 'none'
       CSV.parse(csv).each do |row|
         # リマインダ情報として読み取れない行があったらその時点で読み込み終了する
         begin
@@ -90,11 +90,11 @@ class ReminderRepository
         end
       end
     end
-    @bot.channel(REMINDER_DATA_CHANNEL_ID).message(REMINDER_DATA_MESSAGE_ID).edit(csv == "" ? "none" : csv)
+    @bot.channel(REMINDER_DATA_CHANNEL_ID).message(REMINDER_DATA_MESSAGE_ID).edit(csv == '' ? 'none' : csv)
   end
 end
 
 class ReminderRepositoryNotSetUpError < StandardError
-  def initialize(msg="Reminder repository has not set up yet. Cannot use reminder function.")
+  def initialize(msg='Reminder repository has not set up yet. Cannot use reminder function.')
   end
 end
