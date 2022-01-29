@@ -13,13 +13,17 @@ $reminder_next_id = 0
 class ReminderRepository
   def initialize(bot)
     @bot = bot
-    @never_fetched = true  # 初回のみ読み込みを行うためのフラグ
+    if REMINDER_DATA_CHANNEL_ID != nil and REMINDER_DATA_MESSAGE_ID != nil
+      $reminder_list = read
+      @never_fetched = false
+    else
+      @never_fetched = true
+    end
   end
 
   def fetch_all
-    if @never_fetched and REMINDER_DATA_CHANNEL_ID != nil and REMINDER_DATA_MESSAGE_ID != nil
-      $reminder_list = read
-      @never_fetched = false
+    if @never_fetched
+      raise ReminderRepositoryNotSetUpError
     end
     # そのまま渡すと直接書き換えられてしまうため、コピーオブジェクトを渡す
     # dumpを経由することで深いコピーにしている
