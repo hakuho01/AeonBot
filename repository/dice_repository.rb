@@ -2,14 +2,7 @@ require './func/methods'
 
 class DiceRepository
   def initialize
-    @initialize = false
     @trpg_systems = []
-    begin
-      @trpg_systems = get_trpg_systems
-      @initialize = true
-    rescue
-      # initializeフラグはfalseのままになるが、特に何もしない
-    end
   end
 
   attr_reader :trpg_systems
