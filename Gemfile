@@ -5,9 +5,12 @@ ruby '3.0.3'
 
 gem 'discordrb'
 gem 'dotenv'
-gem 'dotenv-rails'
 gem 'mini_magick'
 
+group :development do
+  gem 'rubocop'
+end
+
 group :development, :test do
-  gem 'rspec-rails'
+  gem 'rspec'
 end

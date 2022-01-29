@@ -7,8 +7,9 @@ Dotenv.load
 IS_LOCAL = ENV['IS_LOCAL']
 
 class BotController
-  def initialize
-    @service = BotService.new
+
+  def initialize(bot)
+    @service = BotService.new(bot)
   end
 
   def handle_mention(event)
