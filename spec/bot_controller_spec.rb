@@ -7,6 +7,7 @@ describe 'BotControllerのテスト' do
   let(:bot) {double(:bot)}
   let(:service) { double(:service) }
   let(:event) { double(:event) }
+  let(:args) { double(:args) }
 
   before do
     allow(BotService).to receive(:new).and_return(service)
@@ -57,6 +58,30 @@ describe 'BotControllerのテスト' do
       it 'Wikipediaの記事をサジェストする' do
         controller = BotController.new(bot)
         expect(service).to receive(:suggest_wikipedia).with(event)
+        controller.handle_mention(event)
+      end
+    end
+
+    context '「ガチャ」の場合' do
+      before do
+        allow(event).to receive_message_chain(:message, :to_s).and_return('ガチャを回す')
+      end
+
+      it 'リアクション10連ガチャを回す' do
+        controller = BotController.new(bot)
+        expect(service).to receive(:challenge_gacha).with(event)
+        controller.handle_mention(event)
+      end
+    end
+
+    context '「10連」の場合' do
+      before do
+        allow(event).to receive_message_chain(:message, :to_s).and_return('今日の10連')
+      end
+
+      it 'リアクション10連ガチャを回す' do
+        controller = BotController.new(bot)
+        expect(service).to receive(:challenge_gacha).with(event)
         controller.handle_mention(event)
       end
     end
@@ -170,6 +195,14 @@ describe 'BotControllerのテスト' do
         expect(service).not_to receive(:save_reminder_list)
         controller.check_reminder
       end
+    end
+  end
+
+  context 'profコマンドの場合' do
+    it 'プロフを生成する' do
+      controller = BotController.new(bot)
+      expect(service).to receive(:make_prof).with(args, event)
+      controller.handle_command(event, args, :profile)
     end
   end
 end
