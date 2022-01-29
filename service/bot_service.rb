@@ -60,14 +60,14 @@ class BotService
   def roll_dice(args, event)
     if @dice_repository.trpg_systems.include? args.last
       trpg_system = args.pop
-      event.respond @dice_repository.roll(args.join(" "), trpg_system)
+      event.respond "<@!#{event.user.id}>" << @dice_repository.roll(args.join(" "), trpg_system)
     elsif
-      event.respond @dice_repository.roll(args.join(" "))
+      event.respond "<@!#{event.user.id}>" << @dice_repository.roll(args.join(" "))
     end
   end
 
   def random_choice(args, event)
-    event.respond @dice_repository.choice(args)
+    event.respond "<@!#{event.user.id}>" << @dice_repository.choice(args)
   end
 
   def say_random(event)
