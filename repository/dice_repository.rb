@@ -2,7 +2,7 @@ require './func/methods'
 
 class DiceRepository
   def initialize
-    @trpg_systems = []
+    @trpg_systems = get_trpg_systems
   end
 
   attr_reader :trpg_systems
@@ -19,10 +19,12 @@ class DiceRepository
   private
 
   def get_trpg_systems
-    parsed_response = attempt_call_bcdice('/v2/game_system/game_system')
-    parsed_response['game_system'].map do |system|
+    trpg_systems = []
+    parsed_response = attempt_call_bcdice('/v2/game_system')
+    trpg_systems = parsed_response['game_system'].map do |system|
       system['id']
     end
+    return trpg_systems
   end
 
   def attempt_call_bcdice(endpoint)
