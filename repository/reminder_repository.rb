@@ -2,8 +2,8 @@ require 'csv'
 require './util/time_util'
 
 Dotenv.load
-REMINDER_DATA_CHANNEL_ID = ENV['REMINDER_DATA_CHANNEL_ID']
-REMINDER_DATA_MESSAGE_ID = ENV['REMINDER_DATA_MESSAGE_ID']
+REMINDER_DATA_CHANNEL_ID = ENV['REMINDER_DATA_CHANNEL_ID'].to_i
+REMINDER_DATA_MESSAGE_ID = ENV['REMINDER_DATA_MESSAGE_ID'].to_i
 
 # グローバル変数でリマインダ一覧を管理している
 # 他のクラスから直接参照せず、かならずReminderRepositoryのメソッドを使用すること
@@ -11,15 +11,19 @@ $reminder_list = []
 $reminder_next_id = 0
 
 class ReminderRepository
-  def initialize
-    @channel_api = Discordrb::API::Channel
-    @never_fetched = true  # 初回のみ読み込みを行うためのフラグ
+  def initialize(bot)
+    @bot = bot
+    if REMINDER_DATA_CHANNEL_ID != nil and REMINDER_DATA_MESSAGE_ID != nil
+      $reminder_list = read
+      @never_fetched = false
+    else
+      @never_fetched = true
+    end
   end
 
   def fetch_all
-    if @never_fetched and REMINDER_DATA_CHANNEL_ID != nil and REMINDER_DATA_MESSAGE_ID != nil
-      $reminder_list = read
-      @never_fetched = false
+    if @never_fetched
+      raise ReminderRepositoryNotSetUpError
     end
     # そのまま渡すと直接書き換えられてしまうため、コピーオブジェクトを渡す
     # dumpを経由することで深いコピーにしている
@@ -56,12 +60,10 @@ class ReminderRepository
 
   def read
     # 保存用メッセージから読み込み
-    response = @channel_api.message("Bot #{TOKEN}", REMINDER_DATA_CHANNEL_ID, REMINDER_DATA_MESSAGE_ID)
-    csv = JSON.parse(response.body)['content']
-
+    csv = @bot.channel(REMINDER_DATA_CHANNEL_ID).message(REMINDER_DATA_MESSAGE_ID).content
     reminder_list = []
     reminder_last_id = 0
-    if csv != "none"
+    if csv != 'none'
       CSV.parse(csv).each do |row|
         # リマインダ情報として読み取れない行があったらその時点で読み込み終了する
         begin
@@ -92,12 +94,11 @@ class ReminderRepository
         end
       end
     end
-
-    @channel_api.edit_message("Bot #{TOKEN}", REMINDER_DATA_CHANNEL_ID, REMINDER_DATA_MESSAGE_ID, csv == "" ? "none" : csv)
+    @bot.channel(REMINDER_DATA_CHANNEL_ID).message(REMINDER_DATA_MESSAGE_ID).edit(csv == '' ? 'none' : csv)
   end
 end
 
 class ReminderRepositoryNotSetUpError < StandardError
-  def initialize(msg="Reminder repository has not set up yet. Cannot use reminder function.")
+  def initialize(msg='Reminder repository has not set up yet. Cannot use reminder function.')
   end
 end

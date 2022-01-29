@@ -16,7 +16,7 @@ TOKEN = ENV['TOKEN']
 CLIENT_ID = ENV['CLIENT_ID'].to_i
 
 bot = Discordrb::Commands::CommandBot.new token: TOKEN, client_id: CLIENT_ID, prefix: '!ae '
-bot_controller = BotController.new
+bot_controller = BotController.new(bot)
 daily_task_controller = DailyTaskController.new(bot)
 
 # メンション時の反応
