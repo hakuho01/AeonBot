@@ -10,6 +10,7 @@ require './config/constants'
 require './func/methods'
 require './util/time_util'
 require './repository/reminder_repository'
+require './repository/dice_repository'
 
 Dotenv.load
 SERVER_ID = ENV['SERVER_ID'].to_i
@@ -22,6 +23,7 @@ PROFILENOTE_CHANNEL_ID = ENV['PROFILENOTE_CHANNEL_ID']
 class BotService
   def initialize(bot)
     @reminder_repository = ReminderRepository.new(bot)
+    @dice_repository = DiceRepository.new
     @bot = bot
   end
 
@@ -52,6 +54,19 @@ class BotService
       gacha_result.push(n[1])
     end
     event.respond gacha_result.join
+  end
+
+  def roll_dice(args, event)
+    if @dice_repository.trpg_systems.include? args.last
+      trpg_system = args.pop
+      event.respond "<@!#{event.user.id}>" << @dice_repository.roll(args.join(" "), trpg_system)
+    elsif
+      event.respond "<@!#{event.user.id}>" << @dice_repository.roll(args.join(" "))
+    end
+  end
+
+  def random_choice(args, event)
+    event.respond "<@!#{event.user.id}>" << @dice_repository.choice(args)
   end
 
   def say_random(event)

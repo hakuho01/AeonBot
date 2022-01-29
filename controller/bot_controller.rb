@@ -38,7 +38,7 @@ class BotController
     when :remind then
       date = args[0]
       time = args[1]
-      message = args[2]
+      message = args.slice(2..args.length-1).join(" ")
       if message.length <= 40  # TODO: validationはどこかに切り出したい
         begin
           @service.add_reminder(date, time, message, event)
@@ -50,6 +50,10 @@ class BotController
       end
     when :profile then
       @service.make_prof(args, event)
+    when :roll then
+      @service.roll_dice(args, event)
+    when :rand then
+      @service.random_choice(args, event)
     end
   end
 
