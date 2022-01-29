@@ -109,7 +109,7 @@ class BotService
   end
 
   def make_prof(args, event)
-    image = MiniMagick::Image.open('src/img/prof_template.png')
+    image = MiniMagick::Image.open('resources/img/prof_template.png')
     profile_data = args
     prof_items = [:name, :inviter, :birthday, :comic, :anime, :game, :social_game, :food, :music, :free_space]
     ary = [prof_items, profile_data].transpose
@@ -131,7 +131,7 @@ class BotService
     text_added_image = image.combine_options do |c|
       c.fill '#0f0f0f'
       c.gravity 'northwest'
-      c.font 'src/font/kiloji_p.ttf'
+      c.font 'resources/font/kiloji_p.ttf'
       c.pointsize 34
       c.annotate '+570+131,0', user_name
       c.annotate '+322+191,0', profile_hash[:name]
