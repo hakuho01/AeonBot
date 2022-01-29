@@ -28,6 +28,10 @@ bot.command :remind do |event, *args|
   bot_controller.handle_command(event, args, :remind)
 end
 
+bot.command :prof do |event, *args|
+  bot_controller.handle_command(event, args, :profile)
+end
+
 # ハッシュ検知時の反応
 bot.message(contains: /^(?!.*http)(?!.*<@)(?!.*<#)(?!.*<:)(?!.*<a:)(?!.*<t:)(?!^AA.+A$)[!-~]{19,}$/) do |event|
   bot_controller.handle_message(event, :hash)

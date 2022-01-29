@@ -21,6 +21,8 @@ class BotController
         @service.say_good_morning(event)
       elsif message.match?(/おやす|おやす〜|おやすー|good night/i)
         @service.say_good_night(event)
+      elsif message.match?(/ガチャ|10連/)
+        @service.challenge_gacha(event)
       elsif message.match?('楽天')
         @service.suggest_rakuten(event)
       elsif message.match?(/wiki/i)
@@ -46,11 +48,13 @@ class BotController
       else
         @service.deny_too_long_reminder(event)
       end
+    when :profile then
+      @service.make_prof(args, event)
     end
   end
 
   def handle_message(event, message_type)
-    case message_type 
+    case message_type
     when :hash then
       @service.judge_detected_hash(event)
     end

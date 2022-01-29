@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require './config/constants'
 require './util/time_util'
 
@@ -21,7 +23,7 @@ class DailyTaskSerivice
     mentions = fps_players.map do |fps_player|
       "<@!#{fps_player.id}>"
     end
-    @bot.channel(WARN_FPS_PLAYERS_CHANNEL_ID).send_message(mentions.join(" ") + Constants::Speech::WARN_FPS_PLAYERS.sample)
+    # @bot.channel(WARN_FPS_PLAYERS_CHANNEL_ID).send_message(mentions.join(" ") + Constants::Speech::WARN_FPS_PLAYERS.sample)
     @last_warned_time = TimeUtil.now
   end
 end

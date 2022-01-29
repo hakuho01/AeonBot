@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'net/http'
 
 # API通信
@@ -38,5 +40,5 @@ def wikipedia(c)
     embed.title = wikipedia_title
     embed.url = wikipedia_url
     embed.colour = 0xFFFFFF
-  end  
+  end
 end
