@@ -10,6 +10,7 @@ require './config/constants'
 require './func/methods'
 require './util/time_util'
 require './repository/reminder_repository'
+require './repository/dice_repository'
 
 Dotenv.load
 SERVER_ID = ENV['SERVER_ID']
@@ -24,6 +25,7 @@ class BotService
     @server_api = Discordrb::API::Server
     @channel_api = Discordrb::API::Channel
     @reminder_repository = ReminderRepository.new
+    @dice_repository = DiceRepository.new
   end
 
   def say_good_morning(event)
@@ -53,6 +55,19 @@ class BotService
       gacha_result.push(n[1])
     end
     event.respond gacha_result.join
+  end
+
+  def roll_dice(args, event)
+    if @dice_repository.trpg_systems.include? args.last
+      trpg_system = args.pop
+      event.respond @dice_repository.roll(args.join(" "), trpg_system)
+    elsif
+      event.respond @dice_repository.roll(args.join(" "))
+    end
+  end
+
+  def random_choice(args, event)
+    event.respond @dice_repository.choice(args)
   end
 
   def say_random(event)
