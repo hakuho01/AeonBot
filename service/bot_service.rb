@@ -27,7 +27,7 @@ class BotService < Component
 
   def construct(bot)
     @reminder_repository = ReminderRepository.instance.init(bot)
-    @dice_repository = DiceRepository.new
+    @dice_repository = DiceRepository.instance.init(bot)
     @bot = bot
   end
 

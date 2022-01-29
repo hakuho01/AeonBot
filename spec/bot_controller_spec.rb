@@ -142,7 +142,7 @@ describe 'BotControllerのテスト' do
 
     context 'rollコマンドの場合' do
       it 'ダイスロールを行う' do
-        controller = BotController.new
+        controller = BotController.instance.init(bot)
         expect(service).to receive(:roll_dice).with(args, event)
         controller.handle_command(event, args, :roll)
       end
@@ -150,7 +150,7 @@ describe 'BotControllerのテスト' do
 
     context 'randコマンドの場合' do
       it 'ランダム選択を行う' do
-        controller = BotController.new
+        controller = BotController.instance.init(bot)
         expect(service).to receive(:random_choice).with(args, event)
         controller.handle_command(event, args, :rand)
       end
