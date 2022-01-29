@@ -6,25 +6,32 @@ require 'dotenv'
 require 'json'
 require 'mini_magick'
 
+require './framework/component'
 require './config/constants'
 require './func/methods'
 require './util/time_util'
 require './repository/reminder_repository'
+require './repository/dice_repository'
+require './model/reminder'
 
 Dotenv.load
-SERVER_ID = ENV['SERVER_ID']
-ISOLATE_ROLE_ID = ENV['ISOLATE_ROLE_ID']
-DEPRIVATE_ROLE_ID = ENV['DEPRIVATE_ROLE_ID']
+SERVER_ID = ENV['SERVER_ID'].to_i
+ISOLATE_ROLE_ID = ENV['ISOLATE_ROLE_ID'].to_i
+DEPRIVATE_ROLE_ID = ENV['DEPRIVATE_ROLE_ID'].to_i
 IS_TEST_MODE = ENV['IS_TEST_MODE'] == 'true'
 WELCOME_CHANNEL_ID = ENV['WELCOME_CHANNEL_ID']
 PROFILENOTE_CHANNEL_ID = ENV['PROFILENOTE_CHANNEL_ID']
 
-class BotService
-  def initialize
-    @server_api = Discordrb::API::Server
-    @channel_api = Discordrb::API::Channel
-    @reminder_repository = ReminderRepository.new
+class BotService < Component
+  private
+
+  def construct(bot)
+    @reminder_repository = ReminderRepository.instance.init(bot)
+    @dice_repository = DiceRepository.instance.init(bot)
+    @bot = bot
   end
+
+  public
 
   def say_good_morning(event)
     event.respond "<@!#{event.user.id}>" << 'おはよう。'
@@ -55,34 +62,38 @@ class BotService
     event.respond gacha_result.join
   end
 
+  def roll_dice(args, event)
+    if @dice_repository.trpg_systems.include? args.last
+      trpg_system = args.pop
+      event.respond "<@!#{event.user.id}>" << @dice_repository.roll(args.join(" "), trpg_system)
+    elsif
+      event.respond "<@!#{event.user.id}>" << @dice_repository.roll(args.join(" "))
+    end
+  end
+
+  def random_choice(args, event)
+    event.respond "<@!#{event.user.id}>" << @dice_repository.choice(args)
+  end
+
   def say_random(event)
     event.respond "<@!#{event.user.id}>" + Constants::Speech::RESPONSE_MENTION.sample
   end
 
   def judge_detected_hash(event)
     event.respond Constants::Speech::DETECT_HASH
-    member_info = @server_api.resolve_member("Bot #{TOKEN}", SERVER_ID, event.user.id)
-    member_role = JSON.parse(member_info)
-    if member_role["roles"].include?(ISOLATE_ROLE_ID)
+    server = @bot.server(SERVER_ID)
+    member = server.member(event.user.id)
+    if member.roles.include?(ISOLATE_ROLE_ID)
       event.respond Constants::Speech::PURGE
       if IS_TEST_MODE
         event.respond Constants::Speech::PURGE_TEST_MODE
       else
-        @server_api.remove_member("Bot #{TOKEN}", SERVER_ID, event.user.id)
+        server.kick(event.user.id)
       end
     else
-      @server_api.add_member_role("Bot #{TOKEN}", SERVER_ID, event.user.id, ISOLATE_ROLE_ID)
-      @server_api.remove_member_role("Bot #{TOKEN}", SERVER_ID, event.user.id, DEPRIVATE_ROLE_ID)
+      member.add_role(ISOLATE_ROLE_ID)
+      member.remove_role(DEPRIVATE_ROLE_ID)
     end
-  end
-
-  def remind(reminder)
-    message = "<@!#{reminder.user_id}>" + Constants::Speech::REMIND % reminder.message
-    @channel_api.create_message("Bot #{TOKEN}", reminder.channel_id, message)
-  end
-
-  def fetch_reminder_list
-    @reminder_repository.fetch_all
   end
 
   def add_reminder(date_str, time_str, message, event)
@@ -102,16 +113,11 @@ class BotService
   end
 
   def deny_not_setup_reminder(event)
-    event.respond "<@!#{event.user.id}>" + Constants::Speech::DEBY_NOT_SETUP_REMINDER
-  end
-
-  def save_reminder_list(reminder_list)
-    @reminder_repository.save_all(reminder_list)
+    event.respond "<@!#{event.user.id}>" + Constants::Speech::DENY_NOT_SETUP_REMINDER
   end
 
   def make_prof(args, event)
-    bot = Discordrb::Commands::CommandBot.new token: TOKEN, client_id: CLIENT_ID, prefix: '!ae '
-    image = MiniMagick::Image.open('src/img/prof_template.png')
+    image = MiniMagick::Image.open('resources/img/prof_template.png')
     profile_data = args
     prof_items = [:name, :inviter, :birthday, :comic, :anime, :game, :social_game, :food, :music, :free_space]
     ary = [prof_items, profile_data].transpose
@@ -133,7 +139,7 @@ class BotService
     text_added_image = image.combine_options do |c|
       c.fill '#0f0f0f'
       c.gravity 'northwest'
-      c.font 'src/font/kiloji_p.ttf'
+      c.font 'resources/font/kiloji_p.ttf'
       c.pointsize 34
       c.annotate '+570+131,0', user_name
       c.annotate '+322+191,0', profile_hash[:name]
@@ -154,8 +160,10 @@ class BotService
       config.gravity 'northwest'
       config.geometry '+100+145'
     end
-    composite_image.write 'output.png'
-    bot.send_file(WELCOME_CHANNEL_ID, File.open('output.png'))
-    bot.send_file(PROFILENOTE_CHANNEL_ID, File.open('output.png'))
+    Dir.mkdir('./output/') unless Dir.exist?('./output/')
+    prof_img_path = './output/prof.png'
+    composite_image.write prof_img_path
+    @bot.send_file(WELCOME_CHANNEL_ID, File.open(prof_img_path))
+    @bot.send_file(PROFILENOTE_CHANNEL_ID, File.open(prof_img_path))
   end
 end

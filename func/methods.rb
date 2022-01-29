@@ -11,10 +11,10 @@ end
 
 # 楽天
 def rakuten(c)
-  parsed_response = get_api(URLs::RAKUTEN_GENRE)
+  parsed_response = get_api(Constants::URLs::RAKUTEN_GENRE)
   random_genre = parsed_response['children'].sample
   genreid = random_genre['child']['genreId']
-  request_uri = URLs::RAKUTEN_RANKING + genreid.to_s
+  request_uri = Constants::URLs::RAKUTEN_RANKING + genreid.to_s
   parsed_response = get_api(request_uri)
   product = parsed_response['Items'].sample
   product_name = product['Item']['itemName']
@@ -32,7 +32,7 @@ end
 
 # wikipedia
 def wikipedia(c)
-  parsed_response = get_api(URLs::WIKIPEDIA)
+  parsed_response = get_api(Constants::URLs::WIKIPEDIA)
   pageid = parsed_response['query']['pageids']
   wikipedia_url = parsed_response['query']['pages'][pageid[0]]['fullurl']
   wikipedia_title = parsed_response['query']['pages'][pageid[0]]['title']

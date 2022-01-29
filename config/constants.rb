@@ -71,10 +71,13 @@ module Constants
       '寝ることくらい、赤子だってできるのに。'
     ]
   end
+
+  module URLs
+    WIKIPEDIA = 'https://ja.wikipedia.org/w/api.php?format=json&action=query&generator=random&grnnamespace=0&prop=info&inprop=url&indexpageids'
+    RAKUTEN_GENRE = 'https://app.rakuten.co.jp/services/api/IchibaGenre/Search/20140222?applicationId=1081731812152273419&genreId=0'
+    RAKUTEN_RANKING = 'https://app.rakuten.co.jp/services/api/IchibaItem/Ranking/20170628?format=json&applicationId=1081731812152273419&genreId='
+    BC_DICE = 'https://bcdice.onlinesession.app'
+    BC_DICE_BACKUP = 'https://bcdice.museru.com/org'
+  end
 end
 
-module URLs
-  WIKIPEDIA = 'https://ja.wikipedia.org/w/api.php?format=json&action=query&generator=random&grnnamespace=0&prop=info&inprop=url&indexpageids'
-  RAKUTEN_GENRE = 'https://app.rakuten.co.jp/services/api/IchibaGenre/Search/20140222?applicationId=1081731812152273419&genreId=0'
-  RAKUTEN_RANKING = 'https://app.rakuten.co.jp/services/api/IchibaItem/Ranking/20170628?format=json&applicationId=1081731812152273419&genreId='
-end
