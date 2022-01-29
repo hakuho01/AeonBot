@@ -7,8 +7,7 @@ require 'json'
 require 'time'
 
 require './controller/bot_controller'
-require './controller/daily_task_controller'
-require './model/reminder'
+require './controller/timer_controller'
 
 # 環境変数読み込み
 Dotenv.load
@@ -16,8 +15,8 @@ TOKEN = ENV['TOKEN']
 CLIENT_ID = ENV['CLIENT_ID'].to_i
 
 bot = Discordrb::Commands::CommandBot.new token: TOKEN, client_id: CLIENT_ID, prefix: '!ae '
-bot_controller = BotController.new(bot)
-daily_task_controller = DailyTaskController.new(bot)
+bot_controller = BotController.instance.init(bot)
+timer_controller = TimerController.instance.init(bot)
 
 # メンション時の反応
 bot.mention do |event|
@@ -45,10 +44,10 @@ end
 # bot起動
 bot.run(true)
 
-# リマインダ起動
+# 時限実行のループ起動
 loop do
-  bot_controller.check_reminder
-  daily_task_controller.check_daily_task
+  timer_controller.check_reminder
+  timer_controller.check_daily_task
   sleep 30
 end
 

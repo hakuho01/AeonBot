@@ -6,11 +6,13 @@ require 'dotenv'
 require 'json'
 require 'mini_magick'
 
+require './framework/component'
 require './config/constants'
 require './func/methods'
 require './util/time_util'
 require './repository/reminder_repository'
 require './repository/dice_repository'
+require './model/reminder'
 
 Dotenv.load
 SERVER_ID = ENV['SERVER_ID'].to_i
@@ -20,12 +22,16 @@ IS_TEST_MODE = ENV['IS_TEST_MODE'] == 'true'
 WELCOME_CHANNEL_ID = ENV['WELCOME_CHANNEL_ID']
 PROFILENOTE_CHANNEL_ID = ENV['PROFILENOTE_CHANNEL_ID']
 
-class BotService
-  def initialize(bot)
-    @reminder_repository = ReminderRepository.new(bot)
-    @dice_repository = DiceRepository.new
+class BotService < Component
+  private
+
+  def construct(bot)
+    @reminder_repository = ReminderRepository.instance.init(bot)
+    @dice_repository = DiceRepository.instance.init(bot)
     @bot = bot
   end
+
+  public
 
   def say_good_morning(event)
     event.respond "<@!#{event.user.id}>" << 'おはよう。'
@@ -90,15 +96,6 @@ class BotService
     end
   end
 
-  def remind(reminder)
-    message = "<@!#{reminder.user_id}>" + Constants::Speech::REMIND % reminder.message
-    @bot.channel(reminder.channel_id).send_message(message)
-  end
-
-  def fetch_reminder_list
-    @reminder_repository.fetch_all
-  end
-
   def add_reminder(date_str, time_str, message, event)
     reminder = Reminder.new(
       @reminder_repository.get_next_id,
@@ -117,10 +114,6 @@ class BotService
 
   def deny_not_setup_reminder(event)
     event.respond "<@!#{event.user.id}>" + Constants::Speech::DENY_NOT_SETUP_REMINDER
-  end
-
-  def save_reminder_list(reminder_list)
-    @reminder_repository.save_all(reminder_list)
   end
 
   def make_prof(args, event)

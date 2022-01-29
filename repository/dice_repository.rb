@@ -1,10 +1,14 @@
 require './func/methods'
 
-class DiceRepository
-  def initialize
+class DiceRepository < Component
+  private
+
+  def construct(bot)
     @trpg_systems = get_trpg_systems
   end
 
+  public
+  
   attr_reader :trpg_systems
 
   def roll(roll_text, trpg_system = :DiceBot)

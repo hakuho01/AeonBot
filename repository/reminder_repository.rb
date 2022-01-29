@@ -1,4 +1,6 @@
 require 'csv'
+
+require './framework/component'
 require './util/time_util'
 
 Dotenv.load
@@ -10,8 +12,11 @@ REMINDER_DATA_MESSAGE_ID = ENV['REMINDER_DATA_MESSAGE_ID'].to_i
 $reminder_list = []
 $reminder_next_id = 0
 
-class ReminderRepository
-  def initialize(bot)
+class ReminderRepository < Component
+
+  private
+
+  def construct(bot)
     @bot = bot
     if REMINDER_DATA_CHANNEL_ID != nil and REMINDER_DATA_MESSAGE_ID != nil
       $reminder_list = read
@@ -20,6 +25,8 @@ class ReminderRepository
       @never_fetched = true
     end
   end
+
+  public
 
   def fetch_all
     if @never_fetched

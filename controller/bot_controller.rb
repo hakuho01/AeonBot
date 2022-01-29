@@ -1,16 +1,21 @@
 require 'discordrb'
 require 'dotenv'
 
+require './framework/component'
 require './service/bot_service'
 
 Dotenv.load
 IS_LOCAL = ENV['IS_LOCAL']
 
-class BotController
+class BotController < Component
 
-  def initialize(bot)
-    @service = BotService.new(bot)
+  private
+
+  def construct(bot)
+    @service = BotService.instance.init(bot)
   end
+
+  public
 
   def handle_mention(event)
     if IS_LOCAL
@@ -42,7 +47,7 @@ class BotController
       if message.length <= 40  # TODO: validationはどこかに切り出したい
         begin
           @service.add_reminder(date, time, message, event)
-        rescue
+        rescue ReminderRepositoryNotSetUpError
           @service.deny_not_setup_reminder(event)
         end
       else
@@ -61,19 +66,6 @@ class BotController
     case message_type
     when :hash then
       @service.judge_detected_hash(event)
-    end
-  end
-
-  def check_reminder
-    reminder_list = @service.fetch_reminder_list
-    now = TimeUtil.now
-    reminder_list.each do |reminder|
-      if not reminder.done and now >= reminder.time
-        @service.remind(reminder)
-        reminder.done = true
-        @service.save_reminder_list(reminder_list)
-        sleep 1
-      end
     end
   end
 end
