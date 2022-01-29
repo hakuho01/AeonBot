@@ -1,18 +1,24 @@
 require 'discordrb'
 require 'dotenv'
 
+require './framework/component'
 require './service/bot_service'
 
 Dotenv.load
 IS_LOCAL = ENV['IS_LOCAL']
 
-class BotController
+class BotController < Component
 
-  def initialize(bot)
-    @service = BotService.new(bot)
+  private
+
+  def construct(bot)
+    @service = BotService.instance.init(bot)
   end
 
+  public
+
   def handle_mention(event)
+    p event
     if IS_LOCAL
       # 開発時はここに書くとサーバーで動いてる死天使本体が発火しなくなるはず
     else
@@ -42,7 +48,7 @@ class BotController
       if message.length <= 40  # TODO: validationはどこかに切り出したい
         begin
           @service.add_reminder(date, time, message, event)
-        rescue
+        rescue ReminderRepositoryNotSetUpError
           @service.deny_not_setup_reminder(event)
         end
       else

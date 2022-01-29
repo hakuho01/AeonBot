@@ -6,10 +6,12 @@ require 'dotenv'
 require 'json'
 require 'mini_magick'
 
+require './framework/component'
 require './config/constants'
 require './func/methods'
 require './util/time_util'
 require './repository/reminder_repository'
+require './model/reminder'
 
 Dotenv.load
 SERVER_ID = ENV['SERVER_ID'].to_i
@@ -19,11 +21,15 @@ IS_TEST_MODE = ENV['IS_TEST_MODE'] == 'true'
 WELCOME_CHANNEL_ID = ENV['WELCOME_CHANNEL_ID']
 PROFILENOTE_CHANNEL_ID = ENV['PROFILENOTE_CHANNEL_ID']
 
-class BotService
-  def initialize(bot)
-    @reminder_repository = ReminderRepository.new(bot)
+class BotService < Component
+  private
+
+  def construct(bot)
+    @reminder_repository = ReminderRepository.instance.init(bot)
     @bot = bot
   end
+
+  public
 
   def say_good_morning(event)
     event.respond "<@!#{event.user.id}>" << 'おはよう。'

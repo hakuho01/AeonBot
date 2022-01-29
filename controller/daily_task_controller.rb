@@ -1,11 +1,17 @@
 # frozen_string_literal: true
 
+require './framework/component'
 require './service/daily_task_service'
 
-class DailyTaskController
-  def initialize(bot)
-    @service = DailyTaskSerivice.new(bot)
+class DailyTaskController < Component
+
+  private
+
+  def construct(bot)
+    @service = DailyTaskSerivice.instance.init(bot)
   end
+
+  public
 
   def check_daily_task
     now = TimeUtil.now

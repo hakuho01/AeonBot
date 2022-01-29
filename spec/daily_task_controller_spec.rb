@@ -8,7 +8,7 @@ describe 'DailyTaskControllerのテスト' do
   let(:event) { double(:event) }
 
   before do
-    allow(DailyTaskSerivice).to receive(:new).and_return(service)
+    allow(DailyTaskSerivice).to receive_message_chain(:instance, :init).and_return(service)
   end
 
   context '日次タスクのチェックが走ったとき' do
@@ -33,7 +33,7 @@ describe 'DailyTaskControllerのテスト' do
         end
 
         it '叱る' do
-          controller = DailyTaskController.new(bot)
+          controller = DailyTaskController.instance.init(bot)
           expect(service).to receive(:warn_fps_players).with([fps_player_1, fps_player_2])
           controller.check_daily_task
         end
@@ -45,7 +45,7 @@ describe 'DailyTaskControllerのテスト' do
         end
 
         it '何もしない' do
-          controller = DailyTaskController.new(bot)
+          controller = DailyTaskController.instance.init(bot)
           expect(service).not_to receive(:warn_fps_players)
           controller.check_daily_task
         end
@@ -65,7 +65,7 @@ describe 'DailyTaskControllerのテスト' do
         end
 
         it '叱る' do
-          controller = DailyTaskController.new(bot)
+          controller = DailyTaskController.instance.init(bot)
           expect(service).to receive(:warn_fps_players).with([fps_player_1, fps_player_2])
           controller.check_daily_task
         end
@@ -78,7 +78,7 @@ describe 'DailyTaskControllerのテスト' do
         end
 
         it '何もしない' do
-          controller = DailyTaskController.new(bot)
+          controller = DailyTaskController.instance.init(bot)
           expect(service).not_to receive(:get_fps_players)
           expect(service).not_to receive(:warn_fps_players)
           controller.check_daily_task
@@ -94,7 +94,7 @@ describe 'DailyTaskControllerのテスト' do
       end
 
       it '何もしない' do
-        controller = DailyTaskController.new(bot)
+        controller = DailyTaskController.instance.init(bot)
         expect(service).not_to receive(:get_fps_players)
         expect(service).not_to receive(:warn_fps_players)
         controller.check_daily_task
@@ -109,7 +109,7 @@ describe 'DailyTaskControllerのテスト' do
       end
 
       it '何もしない' do
-        controller = DailyTaskController.new(bot)
+        controller = DailyTaskController.instance.init(bot)
         expect(service).not_to receive(:get_fps_players)
         expect(service).not_to receive(:warn_fps_players)
         controller.check_daily_task

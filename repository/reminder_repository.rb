@@ -1,4 +1,6 @@
 require 'csv'
+
+require './framework/component'
 require './util/time_util'
 
 Dotenv.load
@@ -10,11 +12,16 @@ REMINDER_DATA_MESSAGE_ID = ENV['REMINDER_DATA_MESSAGE_ID'].to_i
 $reminder_list = []
 $reminder_next_id = 0
 
-class ReminderRepository
-  def initialize(bot)
+class ReminderRepository < Component
+
+  private
+
+  def construct(bot)
     @bot = bot
     @never_fetched = true  # 初回のみ読み込みを行うためのフラグ
   end
+
+  public
 
   def fetch_all
     if @never_fetched and REMINDER_DATA_CHANNEL_ID != nil and REMINDER_DATA_MESSAGE_ID != nil

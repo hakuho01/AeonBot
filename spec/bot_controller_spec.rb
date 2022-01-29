@@ -10,7 +10,7 @@ describe 'BotControllerのテスト' do
   let(:args) { double(:args) }
 
   before do
-    allow(BotService).to receive(:new).and_return(service)
+    allow(BotService).to receive_message_chain(:instance, :init).and_return(service)
   end
 
   context 'メンションが来たとき' do
@@ -20,7 +20,7 @@ describe 'BotControllerのテスト' do
       end
 
       it 'おはようと返す' do
-        controller = BotController.new(bot)
+        controller = BotController.instance.init(bot)
         expect(service).to receive(:say_good_morning).with(event)
         controller.handle_mention(event)
       end
@@ -32,7 +32,7 @@ describe 'BotControllerのテスト' do
       end
 
       it 'おやすみと返す' do
-        controller = BotController.new(bot)
+        controller = BotController.instance.init(bot)
         expect(service).to receive(:say_good_night).with(event)
         controller.handle_mention(event)
       end
@@ -44,7 +44,7 @@ describe 'BotControllerのテスト' do
       end
 
       it '楽天の商品をサジェストする' do
-        controller = BotController.new(bot)
+        controller = BotController.instance.init(bot)
         expect(service).to receive(:suggest_rakuten).with(event)
         controller.handle_mention(event)
       end
@@ -56,7 +56,7 @@ describe 'BotControllerのテスト' do
       end
 
       it 'Wikipediaの記事をサジェストする' do
-        controller = BotController.new(bot)
+        controller = BotController.instance.init(bot)
         expect(service).to receive(:suggest_wikipedia).with(event)
         controller.handle_mention(event)
       end
@@ -68,7 +68,7 @@ describe 'BotControllerのテスト' do
       end
 
       it 'リアクション10連ガチャを回す' do
-        controller = BotController.new(bot)
+        controller = BotController.instance.init(bot)
         expect(service).to receive(:challenge_gacha).with(event)
         controller.handle_mention(event)
       end
@@ -80,7 +80,7 @@ describe 'BotControllerのテスト' do
       end
 
       it 'リアクション10連ガチャを回す' do
-        controller = BotController.new(bot)
+        controller = BotController.instance.init(bot)
         expect(service).to receive(:challenge_gacha).with(event)
         controller.handle_mention(event)
       end
@@ -92,7 +92,7 @@ describe 'BotControllerのテスト' do
       end
 
       it 'ランダムな返答をする' do
-        controller = BotController.new(bot)
+        controller = BotController.instance.init(bot)
         expect(service).to receive(:say_random).with(event)
         controller.handle_mention(event)
       end
@@ -103,7 +103,7 @@ describe 'BotControllerのテスト' do
     context 'remindコマンドの場合' do
       context '適正なリマインダ情報が入力されていたら' do
         it 'リマインダを登録する' do
-          controller = BotController.new(bot)
+          controller = BotController.instance.init(bot)
           date = '2022/1/23'
           time = '4:56'
           message = '0123456789abcdefghijあいうえおかきくけこアイウエオカキクケコ'
@@ -114,7 +114,7 @@ describe 'BotControllerのテスト' do
 
       context 'メッセージの長さが適正でなかったら' do
         it '長過ぎる旨の返答を行い、リマインダ登録は行わない' do
-          controller = BotController.new(bot)
+          controller = BotController.instance.init(bot)
           date = '2022/1/23'
           time = '4:56'
           message = '0123456789abcdefghijあいうえおかきくけこアイウエオカキクケコA'
@@ -130,7 +130,7 @@ describe 'BotControllerのテスト' do
         end
 
         it '現在は登録できない旨の返答を行う' do
-          controller = BotController.new(bot)
+          controller = BotController.instance.init(bot)
           date = '2022/1/23'
           time = '4:56'
           message = '0123456789abcdefghijあいうえおかきくけこアイウエオカキクケコ'
@@ -152,7 +152,7 @@ describe 'BotControllerのテスト' do
     end
 
     it '必ずリマインダリストを取得する' do
-      controller = BotController.new(bot)
+      controller = BotController.instance.init(bot)
       expect(service).to receive(:fetch_reminder_list)
       controller.check_reminder
     end
@@ -163,7 +163,7 @@ describe 'BotControllerのテスト' do
       end
 
       it 'リマインダを送信し、送信完了ステータスを設定し、リマインダリストを保存する' do
-        controller = BotController.new(bot)
+        controller = BotController.instance.init(bot)
         expect(service).to receive(:remind).with(reminder_to_send)
         expect(service).to receive(:save_reminder_list).with([reminder_to_send])
         controller.check_reminder
@@ -177,7 +177,7 @@ describe 'BotControllerのテスト' do
       end
 
       it 'リマインダを送信せず、保存も行わない' do
-        controller = BotController.new(bot)
+        controller = BotController.instance.init(bot)
         expect(service).not_to receive(:remind)
         expect(service).not_to receive(:save_reminder_list)
         controller.check_reminder
@@ -190,7 +190,7 @@ describe 'BotControllerのテスト' do
       end
 
       it 'リマインダを送信せず、保存も行わない' do
-        controller = BotController.new(bot)
+        controller = BotController.instance.init(bot)
         expect(service).not_to receive(:remind)
         expect(service).not_to receive(:save_reminder_list)
         controller.check_reminder
@@ -200,7 +200,7 @@ describe 'BotControllerのテスト' do
 
   context 'profコマンドの場合' do
     it 'プロフを生成する' do
-      controller = BotController.new(bot)
+      controller = BotController.instance.init(bot)
       expect(service).to receive(:make_prof).with(args, event)
       controller.handle_command(event, args, :profile)
     end

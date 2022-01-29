@@ -8,7 +8,6 @@ require 'time'
 
 require './controller/bot_controller'
 require './controller/daily_task_controller'
-require './model/reminder'
 
 # 環境変数読み込み
 Dotenv.load
@@ -16,8 +15,8 @@ TOKEN = ENV['TOKEN']
 CLIENT_ID = ENV['CLIENT_ID'].to_i
 
 bot = Discordrb::Commands::CommandBot.new token: TOKEN, client_id: CLIENT_ID, prefix: '!ae '
-bot_controller = BotController.new(bot)
-daily_task_controller = DailyTaskController.new(bot)
+bot_controller = BotController.instance.init(bot)
+daily_task_controller = DailyTaskController.instance.init(bot)
 
 # メンション時の反応
 bot.mention do |event|
