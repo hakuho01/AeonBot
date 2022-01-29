@@ -141,63 +141,6 @@ describe 'BotControllerのテスト' do
     end
   end
 
-  context 'リマインダのチェックが走ったとき' do
-
-    let(:reminder_to_send) { Reminder.new(1, TimeUtil.now, 'test', 'test', 'test', false) }
-    let(:reminder_already_sent) { Reminder.new(1, TimeUtil.now, 'test', 'test', 'test', true) }
-    let(:reminder_not_yet) { Reminder.new(1, TimeUtil.now+3600, 'test', 'test', 'test', false) }
-
-    before do
-      allow(service).to receive(:fetch_reminder_list).and_return([])
-    end
-
-    it '必ずリマインダリストを取得する' do
-      controller = BotController.instance.init(bot)
-      expect(service).to receive(:fetch_reminder_list)
-      controller.check_reminder
-    end
-
-    context '実行すべきリマインダがあったら' do
-      before do
-        allow(service).to receive(:fetch_reminder_list).and_return([reminder_to_send])
-      end
-
-      it 'リマインダを送信し、送信完了ステータスを設定し、リマインダリストを保存する' do
-        controller = BotController.instance.init(bot)
-        expect(service).to receive(:remind).with(reminder_to_send)
-        expect(service).to receive(:save_reminder_list).with([reminder_to_send])
-        controller.check_reminder
-        expect(reminder_to_send.done).to eq true
-      end
-    end
-
-    context '実行済みのリマインダしかなかったら' do
-      before do
-        allow(service).to receive(:fetch_reminder_list).and_return([reminder_already_sent])
-      end
-
-      it 'リマインダを送信せず、保存も行わない' do
-        controller = BotController.instance.init(bot)
-        expect(service).not_to receive(:remind)
-        expect(service).not_to receive(:save_reminder_list)
-        controller.check_reminder
-      end
-    end
-
-    context 'まだ実行時間が来ていないリマインダしかなかったら' do
-      before do
-        allow(service).to receive(:fetch_reminder_list).and_return([reminder_not_yet])
-      end
-
-      it 'リマインダを送信せず、保存も行わない' do
-        controller = BotController.instance.init(bot)
-        expect(service).not_to receive(:remind)
-        expect(service).not_to receive(:save_reminder_list)
-        controller.check_reminder
-      end
-    end
-  end
-
   context 'profコマンドの場合' do
     it 'プロフを生成する' do
       controller = BotController.instance.init(bot)

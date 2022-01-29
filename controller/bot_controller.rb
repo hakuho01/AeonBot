@@ -18,7 +18,6 @@ class BotController < Component
   public
 
   def handle_mention(event)
-    p event
     if IS_LOCAL
       # 開発時はここに書くとサーバーで動いてる死天使本体が発火しなくなるはず
     else
@@ -63,19 +62,6 @@ class BotController < Component
     case message_type
     when :hash then
       @service.judge_detected_hash(event)
-    end
-  end
-
-  def check_reminder
-    reminder_list = @service.fetch_reminder_list
-    now = TimeUtil.now
-    reminder_list.each do |reminder|
-      if not reminder.done and now >= reminder.time
-        @service.remind(reminder)
-        reminder.done = true
-        @service.save_reminder_list(reminder_list)
-        sleep 1
-      end
     end
   end
 end

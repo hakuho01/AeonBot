@@ -81,15 +81,6 @@ class BotService < Component
     end
   end
 
-  def remind(reminder)
-    message = "<@!#{reminder.user_id}>" + Constants::Speech::REMIND % reminder.message
-    @bot.channel(reminder.channel_id).send_message(message)
-  end
-
-  def fetch_reminder_list
-    @reminder_repository.fetch_all
-  end
-
   def add_reminder(date_str, time_str, message, event)
     reminder = Reminder.new(
       @reminder_repository.get_next_id,
@@ -108,10 +99,6 @@ class BotService < Component
 
   def deny_not_setup_reminder(event)
     event.respond "<@!#{event.user.id}>" + Constants::Speech::DENY_NOT_SETUP_REMINDER
-  end
-
-  def save_reminder_list(reminder_list)
-    @reminder_repository.save_all(reminder_list)
   end
 
   def make_prof(args, event)
