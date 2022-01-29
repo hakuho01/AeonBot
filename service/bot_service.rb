@@ -109,7 +109,6 @@ class BotService
   end
 
   def make_prof(args, event)
-    bot = Discordrb::Commands::CommandBot.new token: TOKEN, client_id: CLIENT_ID, prefix: '!ae '
     image = MiniMagick::Image.open('src/img/prof_template.png')
     profile_data = args
     prof_items = [:name, :inviter, :birthday, :comic, :anime, :game, :social_game, :food, :music, :free_space]
@@ -153,8 +152,9 @@ class BotService
       config.gravity 'northwest'
       config.geometry '+100+145'
     end
-    composite_image.write 'output.png'
-    bot.send_file(WELCOME_CHANNEL_ID, File.open('output.png'))
-    bot.send_file(PROFILENOTE_CHANNEL_ID, File.open('output.png'))
+    prof_img_path = './output/prof.png'
+    composite_image.write prof_img_path
+    @bot.send_file(WELCOME_CHANNEL_ID, File.open(prof_img_path))
+    @bot.send_file(PROFILENOTE_CHANNEL_ID, File.open(prof_img_path))
   end
 end
