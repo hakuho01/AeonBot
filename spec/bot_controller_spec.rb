@@ -6,6 +6,7 @@ describe 'BotControllerのテスト' do
 
   let(:service) { double(:service) }
   let(:event) { double(:event) }
+  let(:args) { double(:args) }
 
   before do
     allow(BotService).to receive(:new).and_return(service)
@@ -111,6 +112,22 @@ describe 'BotControllerのテスト' do
           expect(service).to receive(:deny_not_setup_reminder).with(event)
           controller.handle_command(event, [date, time, message], :remind)
         end
+      end
+    end
+
+    context 'rollコマンドの場合' do
+      it 'ダイスロールを行う' do
+        controller = BotController.new
+        expect(service).to receive(:roll_dice).with(args, event)
+        controller.handle_command(event, args, :roll)
+      end
+    end
+
+    context 'randコマンドの場合' do
+      it 'ランダム選択を行う' do
+        controller = BotController.new
+        expect(service).to receive(:random_choice).with(args, event)
+        controller.handle_command(event, args, :rand)
       end
     end
   end
