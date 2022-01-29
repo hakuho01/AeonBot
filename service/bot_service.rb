@@ -152,6 +152,7 @@ class BotService
       config.gravity 'northwest'
       config.geometry '+100+145'
     end
+    Dir.mkdir('./output/') unless Dir.exist?('./output/')
     prof_img_path = './output/prof.png'
     composite_image.write prof_img_path
     @bot.send_file(WELCOME_CHANNEL_ID, File.open(prof_img_path))
