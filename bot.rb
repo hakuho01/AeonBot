@@ -26,9 +26,14 @@ end
 bot.command :remind do |event, *args|
   bot_controller.handle_command(event, args, :remind)
 end
-
 bot.command :prof do |event, *args|
   bot_controller.handle_command(event, args, :profile)
+end
+bot.command :roll do |event, *args|
+  bot_controller.handle_command(event, args, :roll)
+end
+bot.command :rand do |event, *args|
+  bot_controller.handle_command(event, args, :rand)
 end
 
 # ハッシュ検知時の反応
