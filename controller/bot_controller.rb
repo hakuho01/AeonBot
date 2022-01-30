@@ -32,6 +32,8 @@ class BotController < Component
         @service.suggest_rakuten(event)
       elsif message.match?(/wiki/i)
         @service.suggest_wikipedia(event)
+      elsif message.match?('コイン')
+        @service.toss_coin(event)
       else
         @service.say_random(event)
       end

@@ -62,21 +62,25 @@ class BotService < Component
     event.respond gacha_result.join
   end
 
+  def toss_coin(event)
+    event.respond "<@!#{event.user.id}>" << Constants::Speech::TOSS_COIN.sample
+  end
+
   def roll_dice(args, event)
     if @dice_repository.trpg_systems.include? args.last
       trpg_system = args.pop
-      event.respond "<@!#{event.user.id}>" << @dice_repository.roll(args.join(" "), trpg_system)
+      event.respond "<@!#{event.user.id}>" << @dice_repository.roll(args.join(' '), trpg_system)
     elsif
-      event.respond "<@!#{event.user.id}>" << @dice_repository.roll(args.join(" "))
+      event.respond "<@!#{event.user.id}>" << @dice_repository.roll(args.join(' '))
     end
   end
 
   def random_choice(args, event)
-    event.respond "<@!#{event.user.id}>" << @dice_repository.choice(args)
+    event.respond "<@!#{event.user.id}>" << Constants::Speech::CHOICE_RANDOM % args.sample
   end
 
   def say_random(event)
-    event.respond "<@!#{event.user.id}>" + Constants::Speech::RESPONSE_MENTION.sample
+    event.respond "<@!#{event.user.id}>" << Constants::Speech::RESPONSE_MENTION.sample
   end
 
   def judge_detected_hash(event)
@@ -105,15 +109,15 @@ class BotService < Component
       event.user.id
     )
     @reminder_repository.add(reminder)
-    event.respond "<@!#{event.user.id}>" + Constants::Speech::ADD_REMINDER % [reminder.time.strftime('%Y年%-m月%-d日の%-H時%-M分'), message]
+    event.respond "<@!#{event.user.id}>" << Constants::Speech::ADD_REMINDER % [reminder.time.strftime('%Y年%-m月%-d日の%-H時%-M分'), message]
   end
 
   def deny_too_long_reminder(event)
-    event.respond "<@!#{event.user.id}>" + Constants::Speech::DENY_TOO_LONG_REMINDER
+    event.respond "<@!#{event.user.id}>" << Constants::Speech::DENY_TOO_LONG_REMINDER
   end
 
   def deny_not_setup_reminder(event)
-    event.respond "<@!#{event.user.id}>" + Constants::Speech::DENY_NOT_SETUP_REMINDER
+    event.respond "<@!#{event.user.id}>" << Constants::Speech::DENY_NOT_SETUP_REMINDER
   end
 
   def make_prof(args, event)
