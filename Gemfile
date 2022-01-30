@@ -6,6 +6,7 @@ ruby '3.0.3'
 gem 'discordrb'
 gem 'dotenv'
 gem 'mini_magick'
+gem 'nokogiri'
 
 group :development do
   gem 'rubocop'

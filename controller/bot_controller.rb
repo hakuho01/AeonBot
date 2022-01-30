@@ -18,25 +18,23 @@ class BotController < Component
   public
 
   def handle_mention(event)
-    if IS_LOCAL
-      # 開発時はここに書くとサーバーで動いてる死天使本体が発火しなくなるはず
+    message = event.message.to_s
+    if message.match?(/おはよ|おは〜|おはー|good morning/i)
+      @service.say_good_morning(event)
+    elsif message.match?(/おやす|おやす〜|おやすー|good night/i)
+      @service.say_good_night(event)
+    elsif message.match?(/ガチャ|10連/)
+      @service.challenge_gacha(event)
+    elsif message.match?('楽天')
+      @service.suggest_rakuten(event)
+    elsif message.match?(/wiki/i)
+      @service.suggest_wikipedia(event)
+    elsif message.match?('コイン')
+      @service.toss_coin(event)
+    elsif message.match?(/asasore|朝それ|お題/)
+      @service.asasore(event)
     else
-      message = event.message.to_s
-      if message.match?(/おはよ|おは〜|おはー|good morning/i)
-        @service.say_good_morning(event)
-      elsif message.match?(/おやす|おやす〜|おやすー|good night/i)
-        @service.say_good_night(event)
-      elsif message.match?(/ガチャ|10連/)
-        @service.challenge_gacha(event)
-      elsif message.match?('楽天')
-        @service.suggest_rakuten(event)
-      elsif message.match?(/wiki/i)
-        @service.suggest_wikipedia(event)
-      elsif message.match?('コイン')
-        @service.toss_coin(event)
-      else
-        @service.say_random(event)
-      end
+      @service.say_random(event)
     end
   end
 
