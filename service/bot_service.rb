@@ -69,9 +69,9 @@ class BotService < Component
   def roll_dice(args, event)
     if @dice_repository.trpg_systems.include? args.last
       trpg_system = args.pop
-      event.respond "<@!#{event.user.id}>" << @dice_repository.roll(args.join(" "), trpg_system)
+      event.respond "<@!#{event.user.id}>" << @dice_repository.roll(args.join(' '), trpg_system)
     elsif
-      event.respond "<@!#{event.user.id}>" << @dice_repository.roll(args.join(" "))
+      event.respond "<@!#{event.user.id}>" << @dice_repository.roll(args.join(' '))
     end
   end
 
