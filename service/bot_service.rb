@@ -103,7 +103,7 @@ class BotService < Component
   def add_reminder(date_str, time_str, message, event)
     reminder = Reminder.new(
       @reminder_repository.get_next_id,
-      TimeUtil::parse_date_time(date_str, time_str),
+      TimeUtil.parse_date_time(date_str, time_str),
       message,
       event.channel.id,
       event.user.id
@@ -123,7 +123,7 @@ class BotService < Component
   def make_prof(args, event)
     image = MiniMagick::Image.open('resources/img/prof_template.png')
     profile_data = args
-    prof_items = [:name, :inviter, :birthday, :comic, :anime, :game, :social_game, :food, :music, :free_space]
+    prof_items = %i[name inviter birthday comic anime game social_game food music free_space]
     ary = [prof_items, profile_data].transpose
     profile_hash = Hash[*ary.flatten]
     profile_hash[:name].to_s.slice!(0..2)

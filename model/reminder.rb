@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Reminder
-  def initialize(reminder_id, time, message, channel_id, user_id, done=false)
+  def initialize(reminder_id, time, message, channel_id, user_id, done: false)
     @reminder_id = reminder_id
     @time = time
     @message = message
