@@ -86,6 +86,18 @@ describe 'BotControllerのテスト' do
       end
     end
 
+    context '「コイン」の場合' do
+      before do
+        allow(event).to receive_message_chain(:message, :to_s).and_return('コイントスして')
+      end
+
+      it 'コイントスをする' do
+        controller = BotController.instance.init(bot)
+        expect(service).to receive(:toss_coin).with(event)
+        controller.handle_mention(event)
+      end
+    end
+
     context 'その他のメンションの場合' do
       before do
         allow(event).to receive_message_chain(:message, :to_s).and_return('可愛いね')
@@ -155,13 +167,13 @@ describe 'BotControllerのテスト' do
         controller.handle_command(event, args, :rand)
       end
     end
-  end
 
-  context 'profコマンドの場合' do
-    it 'プロフを生成する' do
-      controller = BotController.instance.init(bot)
-      expect(service).to receive(:make_prof).with(args, event)
-      controller.handle_command(event, args, :profile)
+    context 'profコマンドの場合' do
+      it 'プロフを生成する' do
+        controller = BotController.instance.init(bot)
+        expect(service).to receive(:make_prof).with(args, event)
+        controller.handle_command(event, args, :profile)
+      end
     end
   end
 end

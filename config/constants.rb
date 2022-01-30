@@ -70,6 +70,9 @@ module Constants
       '寝なさい。',
       '寝ることくらい、赤子だってできるのに。'
     ]
+
+    CHOICE_RANDOM = '選ばれたのは……「%s」。'
+    TOSS_COIN = [':coin:　……表。', ':yellow_circle:　……裏。']
   end
 
   module URLs
