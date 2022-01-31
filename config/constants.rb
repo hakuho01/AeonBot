@@ -81,6 +81,6 @@ module Constants
     RAKUTEN_RANKING = 'https://app.rakuten.co.jp/services/api/IchibaItem/Ranking/20170628?format=json&applicationId=1081731812152273419&genreId='
     BC_DICE = 'https://bcdice.onlinesession.app'
     BC_DICE_BACKUP = 'https://bcdice.museru.com/org'
+    ASASORE = 'https://soreseikai.com/'
   end
 end
-
