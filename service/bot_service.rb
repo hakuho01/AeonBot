@@ -5,8 +5,6 @@ require 'discordrb'
 require 'dotenv'
 require 'json'
 require 'mini_magick'
-require 'open-uri'
-require 'nokogiri'
 
 require './framework/component'
 require './config/constants'
@@ -82,13 +80,7 @@ class BotService < Component
   end
 
   def asasore(event)
-    html = URI.open(Constants::URLs::ASASORE).read
-    doc = Nokogiri::HTML.parse(html)
-    asasore_theme = doc.at_css('#wrap-question').text
-    event.send_embed do |embed|
-      embed.title = asasore_theme
-      embed.colour = 0xFF00FF
-    end
+    asasore_theme event
   end
 
   def say_random(event)

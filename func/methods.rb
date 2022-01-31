@@ -1,6 +1,9 @@
 # frozen_string_literal: true
+require './config/constants'
 
 require 'net/http'
+require 'open-uri'
+require 'nokogiri'
 
 # API通信
 def get_api(api_uri)
@@ -40,5 +43,16 @@ def wikipedia(c)
     embed.title = wikipedia_title
     embed.url = wikipedia_url
     embed.colour = 0xFFFFFF
+  end
+end
+
+# 朝それ
+def asasore_theme(event)
+  html = URI.open(Constants::URLs::ASASORE).read
+  doc = Nokogiri::HTML.parse(html)
+  theme = doc.at_css('#wrap-question').text
+  event.send_embed do |embed|
+    embed.title = theme
+    embed.colour = 0xFF00FF
   end
 end
