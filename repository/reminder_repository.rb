@@ -17,7 +17,7 @@ class ReminderRepository < Component
 
   def construct(bot)
     @bot = bot
-    if !REMINDER_DATA_CHANNEL_ID.nil && !REMINDER_DATA_MESSAGE_ID.nil
+    if REMINDER_DATA_CHANNEL_ID != nil and REMINDER_DATA_MESSAGE_ID != nil
       $reminder_list = read
       @never_fetched = false
     else
@@ -83,7 +83,7 @@ class ReminderRepository < Component
         rescue
           break
         end
-        reminder_list.push(Reminder.new(reminder_last_id + 1, time, message, channel_id, user_id, false))
+        reminder_list.push(Reminder.new(reminder_last_id+1, time, message, channel_id, user_id, false))
       end
     end
 
