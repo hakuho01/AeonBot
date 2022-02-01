@@ -83,7 +83,7 @@ class ReminderRepository < Component
         rescue
           break
         end
-        reminder_list.push(Reminder.new(reminder_last_id + 1, time, message, channel_id, user_id, false))
+        reminder_list.push(Reminder.new(reminder_last_id+1, time, message, channel_id, user_id, false))
       end
     end
 
