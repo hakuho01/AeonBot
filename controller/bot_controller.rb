@@ -8,7 +8,6 @@ Dotenv.load
 IS_LOCAL = ENV['IS_LOCAL']
 
 class BotController < Component
-
   private
 
   def construct(bot)
@@ -40,10 +39,10 @@ class BotController < Component
 
   def handle_command(event, args, command_type)
     case command_type
-    when :remind then
+    when :remind
       date = args[0]
       time = args[1]
-      message = args.slice(2..args.length-1).join(" ")
+      message = args.slice(2..args.length - 1).join(' ')
       if message.length <= 40  # TODO: validationはどこかに切り出したい
         begin
           @service.add_reminder(date, time, message, event)
@@ -53,18 +52,18 @@ class BotController < Component
       else
         @service.deny_too_long_reminder(event)
       end
-    when :profile then
+    when :profile
       @service.make_prof(args, event)
-    when :roll then
+    when :roll
       @service.roll_dice(args, event)
-    when :rand then
+    when :rand
       @service.random_choice(args, event)
     end
   end
 
   def handle_message(event, message_type)
     case message_type
-    when :hash then
+    when :hash
       @service.judge_detected_hash(event)
     end
   end
