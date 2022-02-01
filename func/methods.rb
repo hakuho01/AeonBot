@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require './config/constants'
 
 require 'net/http'
@@ -13,7 +14,7 @@ def get_api(api_uri)
 end
 
 # 楽天
-def rakuten(c)
+def rakuten(event)
   parsed_response = get_api(Constants::URLs::RAKUTEN_GENRE)
   random_genre = parsed_response['children'].sample
   genreid = random_genre['child']['genreId']
@@ -24,7 +25,7 @@ def rakuten(c)
   product_price = product['Item']['itemPrice']
   product_image = product['Item']['mediumImageUrls'][0]['imageUrl']
   product_url = product['Item']['itemUrl']
-  c.send_embed do |embed|
+  event.send_embed do |embed|
     embed.title = product_name
     embed.description = "￥#{product_price}"
     embed.url = product_url
@@ -34,12 +35,12 @@ def rakuten(c)
 end
 
 # wikipedia
-def wikipedia(c)
+def wikipedia(event)
   parsed_response = get_api(Constants::URLs::WIKIPEDIA)
   pageid = parsed_response['query']['pageids']
   wikipedia_url = parsed_response['query']['pages'][pageid[0]]['fullurl']
   wikipedia_title = parsed_response['query']['pages'][pageid[0]]['title']
-  c.send_embed do |embed|
+  event.send_embed do |embed|
     embed.title = wikipedia_title
     embed.url = wikipedia_url
     embed.colour = 0xFFFFFF
@@ -55,4 +56,9 @@ def asasore_theme(event)
     embed.title = theme
     embed.colour = 0xFF00FF
   end
+end
+
+# Wisdom Guild
+def wisdom_guild(event)
+
 end
