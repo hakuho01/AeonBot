@@ -41,6 +41,11 @@ bot.message(contains: /^(?!.*http)(?!.*<@)(?!.*<#)(?!.*<:)(?!.*<a:)(?!.*<t:)(?!^
   bot_controller.handle_message(event, :hash)
 end
 
+# Wisdom Guild
+bot.message(contains: /{{/) do |event|
+  bot_controller.handle_message(event, :wg)
+end
+
 # bot起動
 bot.run(true)
 
