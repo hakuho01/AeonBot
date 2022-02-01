@@ -65,6 +65,8 @@ class BotController < Component
     case message_type
     when :hash
       @service.judge_detected_hash(event)
+    when :wg
+      @service.wg_get(event)
     end
   end
 end

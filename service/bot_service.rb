@@ -51,6 +51,10 @@ class BotService < Component
     wikipedia event
   end
 
+  def wg_get(event)
+    wisdom_guild event
+  end
+
   def challenge_gacha(event)
     emojis = event.server.emoji.to_a
     results = []
