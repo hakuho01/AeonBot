@@ -32,8 +32,6 @@ class BotController < Component
       @service.toss_coin(event)
     elsif message.match?(/asasore|朝それ|お題/)
       @service.asasore(event)
-    elsif message.match?('うんち')
-      @service.suggest_buri(event)
     else
       @service.say_random(event)
     end

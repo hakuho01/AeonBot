@@ -55,10 +55,6 @@ class BotService < Component
     wisdom_guild event
   end
 
-  def suggest_buri(event)
-    buri event
-  end
-
   def challenge_gacha(event)
     emojis = event.server.emoji.to_a
     results = []
