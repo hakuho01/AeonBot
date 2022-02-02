@@ -86,3 +86,14 @@ def wisdom_guild(event)
 #      puts wgurl
 #      get_api(wgurl)
 end
+
+def buri(event)
+  buri_list = get_api('https://ja.wikipedia.org/w/api.php?action=query&format=json&list=prefixsearch&pssearch=%E3%83%96%E3%83%AA&pslimit=5000')
+  rand_buri = buri_list['query']['prefixsearch'].sample
+  event.respond "<@!#{event.user.id}>" + 'うんちブリブリ' + rand_buri['title']
+  event.send_embed do |embed|
+    embed.title = rand_buri['title']
+    embed.url = 'https://ja.wikipedia.org/w/index.php?curid=' + rand_buri['pageid'].to_s
+    embed.colour = 0xcd853f
+  end
+end
