@@ -30,6 +30,8 @@ class BotController < Component
       @service.suggest_wikipedia(event)
     elsif message.match?('コイン')
       @service.toss_coin(event)
+    elsif message.match?(/asasore|朝それ|お題/)
+      @service.asasore(event)
     else
       @service.say_random(event)
     end
@@ -63,6 +65,8 @@ class BotController < Component
     case message_type
     when :hash
       @service.judge_detected_hash(event)
+    when :wg
+      @service.wg_get(event)
     end
   end
 end

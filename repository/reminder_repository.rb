@@ -17,7 +17,7 @@ class ReminderRepository < Component
 
   def construct(bot)
     @bot = bot
-    if !REMINDER_DATA_CHANNEL_ID.nil && !REMINDER_DATA_MESSAGE_ID.nil
+    if REMINDER_DATA_CHANNEL_ID != nil and REMINDER_DATA_MESSAGE_ID != nil
       $reminder_list = read
       @never_fetched = false
     else

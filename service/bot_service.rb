@@ -21,6 +21,8 @@ DEPRIVATE_ROLE_ID = ENV['DEPRIVATE_ROLE_ID'].to_i
 IS_TEST_MODE = ENV['IS_TEST_MODE'] == 'true'
 WELCOME_CHANNEL_ID = ENV['WELCOME_CHANNEL_ID']
 PROFILENOTE_CHANNEL_ID = ENV['PROFILENOTE_CHANNEL_ID']
+WG_API_KEY = ENV['WG_API_KEY']
+WG_S_KEY = ENV['WG_S_KEY']
 
 class BotService < Component
   private
@@ -47,6 +49,10 @@ class BotService < Component
 
   def suggest_wikipedia(event)
     wikipedia event
+  end
+
+  def wg_get(event)
+    wisdom_guild event
   end
 
   def challenge_gacha(event)
@@ -77,6 +83,10 @@ class BotService < Component
 
   def random_choice(args, event)
     event.respond "<@!#{event.user.id}>" << Constants::Speech::CHOICE_RANDOM % args.sample
+  end
+
+  def asasore(event)
+    asasore_theme event
   end
 
   def say_random(event)
