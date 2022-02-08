@@ -3,6 +3,8 @@ require 'dotenv'
 
 require './framework/component'
 require './service/bot_service'
+require './service/asasore_service'
+require './service/api_service'
 
 Dotenv.load
 IS_LOCAL = ENV['IS_LOCAL']
@@ -12,6 +14,8 @@ class BotController < Component
 
   def construct(bot)
     @service = BotService.instance.init(bot)
+    @asasore_service = AsasoreService.instance.init
+    @api_service = ApiService.instance.init
   end
 
   public
@@ -25,13 +29,13 @@ class BotController < Component
     elsif message.match?(/ガチャ|10連/)
       @service.challenge_gacha(event)
     elsif message.match?('楽天')
-      @service.suggest_rakuten(event)
+      @api_service.rakuten(event)
     elsif message.match?(/wiki/i)
-      @service.suggest_wikipedia(event)
+      @api_service.wikipedia(event)
     elsif message.match?('コイン')
       @service.toss_coin(event)
     elsif message.match?(/asasore|朝それ|お題/)
-      @service.asasore(event)
+      @asasore_service.asasore_theme(event)
     else
       @service.say_random(event)
     end
@@ -66,7 +70,7 @@ class BotController < Component
     when :hash
       @service.judge_detected_hash(event)
     when :wg
-      @service.wg_get(event)
+      @api_service.wisdom_guild(event)
     end
   end
 end
