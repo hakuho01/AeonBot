@@ -8,7 +8,6 @@ require 'mini_magick'
 
 require './framework/component'
 require './config/constants'
-require './func/methods'
 require './util/time_util'
 require './repository/reminder_repository'
 require './repository/dice_repository'
@@ -43,18 +42,6 @@ class BotService < Component
     event.respond "<@!#{event.user.id}>" << 'おやすみ。'
   end
 
-  def suggest_rakuten(event)
-    rakuten event
-  end
-
-  def suggest_wikipedia(event)
-    wikipedia event
-  end
-
-  def wg_get(event)
-    wisdom_guild event
-  end
-
   def challenge_gacha(event)
     emojis = event.server.emoji.to_a
     results = []
@@ -83,10 +70,6 @@ class BotService < Component
 
   def random_choice(args, event)
     event.respond "<@!#{event.user.id}>" << Constants::Speech::CHOICE_RANDOM % args.sample
-  end
-
-  def asasore(event)
-    asasore_theme event
   end
 
   def say_random(event)
