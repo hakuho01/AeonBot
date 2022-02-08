@@ -1,4 +1,4 @@
-require './func/methods'
+require './util/methods'
 
 class DiceRepository < Component
   private
