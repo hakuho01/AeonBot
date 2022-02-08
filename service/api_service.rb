@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require './config/constants'
+require './util/api_util'
 
 require 'net/http'
 require 'open-uri'
@@ -9,20 +10,14 @@ require 'openssl'
 require 'cgi'
 
 class ApiService < Component
-  # API通信
-  def get_api(api_uri)
-    uri = URI.parse(api_uri)
-    response = Net::HTTP.get_response(uri)
-    JSON.parse(response.body)
-  end
 
   # 楽天
   def rakuten(event)
-    parsed_response = get_api(Constants::URLs::RAKUTEN_GENRE)
+    parsed_response = ApiUtil::get(Constants::URLs::RAKUTEN_GENRE)
     random_genre = parsed_response['children'].sample
     genreid = random_genre['child']['genreId']
     request_uri = Constants::URLs::RAKUTEN_RANKING + genreid.to_s
-    parsed_response = get_api(request_uri)
+    parsed_response = ApiUtil::get(request_uri)
     product = parsed_response['Items'].sample
     product_name = product['Item']['itemName']
     product_price = product['Item']['itemPrice']
@@ -39,7 +34,7 @@ class ApiService < Component
 
   # wikipedia
   def wikipedia(event)
-    parsed_response = get_api(Constants::URLs::WIKIPEDIA)
+    parsed_response = ApiUtil::get(Constants::URLs::WIKIPEDIA)
     pageid = parsed_response['query']['pageids']
     wikipedia_url = parsed_response['query']['pages'][pageid[0]]['fullurl']
     wikipedia_title = parsed_response['query']['pages'][pageid[0]]['title']
@@ -53,7 +48,7 @@ class ApiService < Component
   def wisdom_guild(event)
     cardname = event.message.to_s.slice(/{{.*?}}/)[2..-3]
     encoded_cardname = CGI.escape(cardname)
-    scryfall = get_api('https://api.scryfall.com/cards/named?fuzzy=' + encoded_cardname)
+    scryfall = ApiUtil::get('https://api.scryfall.com/cards/named?fuzzy=' + encoded_cardname)
     encoded_accurate_cardname = CGI.escape(scryfall['name'])
     html = URI.open('http://wonder.wisdom-guild.net/price/' + encoded_accurate_cardname).read
     doc = Nokogiri::HTML.parse(html)
@@ -74,6 +69,6 @@ class ApiService < Component
   #      api_sig = OpenSSL::HMAC.hexdigest('sha256', 'z9uY6YXsxxK49vtGr8vBedVw', querystr)
   #      wgurl = 'http://wonder.wisdom-guild.net/api/card-price/v1/' << '?' << 'api_key=hakuho01&name=' << cardname << '&timestamp=' << unixtime.to_s << '&api_sig=' << api_sig
   #      puts wgurl
-  #      get_api(wgurl)
+  #      ApiUtil::get(wgurl)
   end
 end
