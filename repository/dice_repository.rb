@@ -1,4 +1,4 @@
-require './util/methods'
+require './util/api_util'
 
 class DiceRepository < Component
   private

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require './config/constants'
-require './util/methods'
+require './util/api_util'
 
 require 'net/http'
 require 'open-uri'
