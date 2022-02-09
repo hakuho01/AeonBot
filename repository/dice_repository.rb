@@ -1,4 +1,4 @@
-require './func/methods'
+require './util/api_util'
 
 class DiceRepository < Component
   private
@@ -33,9 +33,9 @@ class DiceRepository < Component
 
   def attempt_call_bcdice(endpoint)
     begin
-      get_api(Constants::URLs::BC_DICE + endpoint)
+      ApiUtil::get(Constants::URLs::BC_DICE + endpoint)
     rescue
-      get_api(Constants::URLs::BC_DICE_BACKUP + endpoint)
+      ApiUtil::get(Constants::URLs::BC_DICE_BACKUP + endpoint)
     end
   end
 end

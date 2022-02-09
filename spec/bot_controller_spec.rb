@@ -1,5 +1,6 @@
 require './controller/bot_controller'
 require './service/bot_service'
+require './service/api_service'
 require './model/reminder'
 
 describe 'BotControllerのテスト' do
@@ -11,6 +12,8 @@ describe 'BotControllerのテスト' do
 
   before do
     allow(BotService).to receive_message_chain(:instance, :init).and_return(service)
+    allow(ApiService).to receive_message_chain(:instance, :init).and_return(service)
+    allow(AsasoreService).to receive_message_chain(:instance, :init).and_return(service)
   end
 
   context 'メンションが来たとき' do
@@ -45,7 +48,7 @@ describe 'BotControllerのテスト' do
 
       it '楽天の商品をサジェストする' do
         controller = BotController.instance.init(bot)
-        expect(service).to receive(:suggest_rakuten).with(event)
+        expect(service).to receive(:rakuten).with(event)
         controller.handle_mention(event)
       end
     end
@@ -57,7 +60,7 @@ describe 'BotControllerのテスト' do
 
       it 'Wikipediaの記事をサジェストする' do
         controller = BotController.instance.init(bot)
-        expect(service).to receive(:suggest_wikipedia).with(event)
+        expect(service).to receive(:wikipedia).with(event)
         controller.handle_mention(event)
       end
     end
@@ -98,6 +101,30 @@ describe 'BotControllerのテスト' do
       end
     end
 
+    context '「朝それ」の場合' do
+      before do
+        allow(event).to receive_message_chain(:message, :to_s).and_return('今日の朝それ')
+      end
+
+      it '朝それのお題を出す' do
+        controller = BotController.instance.init(bot)
+        expect(service).to receive(:asasore_theme).with(event)
+        controller.handle_mention(event)
+      end
+    end
+
+    context '「お題」の場合' do
+      before do
+        allow(event).to receive_message_chain(:message, :to_s).and_return('お題ちょうだい')
+      end
+
+      it '朝それのお題を出す' do
+        controller = BotController.instance.init(bot)
+        expect(service).to receive(:asasore_theme).with(event)
+        controller.handle_mention(event)
+      end
+    end
+    
     context 'その他のメンションの場合' do
       before do
         allow(event).to receive_message_chain(:message, :to_s).and_return('可愛いね')
