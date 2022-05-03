@@ -8,7 +8,7 @@ class DiceRepository < Component
   end
 
   public
-  
+
   attr_reader :trpg_systems
 
   def roll(roll_text, trpg_system = :DiceBot)
@@ -33,9 +33,9 @@ class DiceRepository < Component
 
   def attempt_call_bcdice(endpoint)
     begin
-      ApiUtil::get(Constants::URLs::BC_DICE + endpoint)
+      ApiUtil.get(Constants::URLs::BC_DICE + endpoint)
     rescue
-      ApiUtil::get(Constants::URLs::BC_DICE_BACKUP + endpoint)
+      ApiUtil.get(Constants::URLs::BC_DICE_BACKUP + endpoint)
     end
   end
 end

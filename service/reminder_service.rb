@@ -4,7 +4,6 @@ require './framework/component'
 require './config/constants'
 
 class ReminderService < Component
-  
   private
 
   def construct(bot)
@@ -26,5 +25,4 @@ class ReminderService < Component
   def save_reminder_list(reminder_list)
     @reminder_repository.save_all(reminder_list)
   end
-
 end

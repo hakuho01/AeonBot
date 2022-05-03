@@ -4,8 +4,7 @@ require './service/api_service'
 require './model/reminder'
 
 describe 'BotControllerのテスト' do
-
-  let(:bot) {double(:bot)}
+  let(:bot) { double(:bot) }
   let(:service) { double(:service) }
   let(:event) { double(:event) }
   let(:args) { double(:args) }
@@ -124,7 +123,7 @@ describe 'BotControllerのテスト' do
         controller.handle_mention(event)
       end
     end
-    
+
     context 'その他のメンションの場合' do
       before do
         allow(event).to receive_message_chain(:message, :to_s).and_return('可愛いね')
