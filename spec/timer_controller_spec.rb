@@ -3,8 +3,7 @@ require './service/daily_task_service'
 require './service/reminder_service'
 
 describe 'TimerControllerのテスト' do
-
-  let(:bot) {double(:bot)}
+  let(:bot) { double(:bot) }
   let(:daily_spec_service) { double(:daily_spec_service) }
   let(:reminder_service) { double(:reminder_service) }
   let(:event) { double(:event) }
@@ -15,7 +14,6 @@ describe 'TimerControllerのテスト' do
   end
 
   context 'リマインダのチェックが走ったとき' do
-
     let(:reminder_to_send) { Reminder.new(1, TimeUtil.now, 'test', 'test', 'test', false) }
     let(:reminder_already_sent) { Reminder.new(1, TimeUtil.now, 'test', 'test', 'test', true) }
     let(:reminder_not_yet) { Reminder.new(1, TimeUtil.now+3600, 'test', 'test', 'test', false) }
@@ -72,7 +70,6 @@ describe 'TimerControllerのテスト' do
   end
 
   context '日次タスクのチェックが走ったとき' do
-
     let(:fps_player_1) { double(:fps_player_1) }
     let(:fps_player_2) { double(:fps_player_2) }
 
@@ -84,7 +81,7 @@ describe 'TimerControllerのテスト' do
       before do
         allow(TimeUtil).to receive(:now).and_return(TimeUtil.parse_min_time('202201260200'))
       end
-      
+
       context 'VCに入っているメンバーがいれば' do
         before do
           allow(fps_player_1).to receive(:id).and_return(1)
@@ -145,7 +142,7 @@ describe 'TimerControllerのテスト' do
         end
       end
     end
-    
+
     context '2時になってなければ（1:59）' do
       before do
         allow(TimeUtil).to receive(:now).and_return(TimeUtil.parse_min_time('202201260159'))

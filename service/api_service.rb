@@ -13,11 +13,11 @@ class ApiService < Component
 
   # 楽天
   def rakuten(event)
-    parsed_response = ApiUtil::get(Constants::URLs::RAKUTEN_GENRE)
+    parsed_response = ApiUtil.get(Constants::URLs::RAKUTEN_GENRE)
     random_genre = parsed_response['children'].sample
     genreid = random_genre['child']['genreId']
     request_uri = Constants::URLs::RAKUTEN_RANKING + genreid.to_s
-    parsed_response = ApiUtil::get(request_uri)
+    parsed_response = ApiUtil.get(request_uri)
     product = parsed_response['Items'].sample
     product_name = product['Item']['itemName']
     product_price = product['Item']['itemPrice']
@@ -34,7 +34,7 @@ class ApiService < Component
 
   # wikipedia
   def wikipedia(event)
-    parsed_response = ApiUtil::get(Constants::URLs::WIKIPEDIA)
+    parsed_response = ApiUtil.get(Constants::URLs::WIKIPEDIA)
     pageid = parsed_response['query']['pageids']
     wikipedia_url = parsed_response['query']['pages'][pageid[0]]['fullurl']
     wikipedia_title = parsed_response['query']['pages'][pageid[0]]['title']
@@ -48,7 +48,7 @@ class ApiService < Component
   def wisdom_guild(event)
     cardname = event.message.to_s.slice(/{{.*?}}/)[2..-3]
     encoded_cardname = CGI.escape(cardname)
-    scryfall = ApiUtil::get('https://api.scryfall.com/cards/named?fuzzy=' + encoded_cardname)
+    scryfall = ApiUtil.get('https://api.scryfall.com/cards/named?fuzzy=' + encoded_cardname)
     encoded_accurate_cardname = CGI.escape(scryfall['name'])
     html = URI.open('http://wonder.wisdom-guild.net/price/' + encoded_accurate_cardname).read
     doc = Nokogiri::HTML.parse(html)
