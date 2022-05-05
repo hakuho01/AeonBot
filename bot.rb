@@ -41,6 +41,11 @@ bot.message(contains: /^(?!.*http)(?!.*<@)(?!.*<#)(?!.*<:)(?!.*<a:)(?!.*<t:)(?!^
   bot_controller.handle_message(event, :hash)
 end
 
+# TwiiterのNSFWサムネイル表示
+bot.message(contains: (/https:\/\/twitter.com\/([a-zA-Z0-9_]+)\/status\/([0-9]+)/)) do |event|
+  bot_controller.handle_message(event, :thumb)
+end
+
 # Wisdom Guild
 bot.message(contains: /{{/) do |event|
   bot_controller.handle_message(event, :wg)

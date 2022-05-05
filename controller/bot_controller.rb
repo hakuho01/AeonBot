@@ -69,6 +69,8 @@ class BotController < Component
     case message_type
     when :hash
       @service.judge_detected_hash(event)
+    when :thumb
+      @api_service.twitter_thumbnail(event)
     when :wg
       @api_service.wisdom_guild(event)
     end
