@@ -86,6 +86,7 @@ class ApiService < Component
     parsed_response = JSON.parse(response)
 
     return if parsed_response['data']['possibly_sensitive'] == false
+    return if parsed_response['includes']['media'][0]['type'] == 'video'
 
     likes = parsed_response['data']['public_metrics']['like_count']
     rts = parsed_response['data']['public_metrics']['retweet_count']
