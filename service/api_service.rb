@@ -82,11 +82,15 @@ class ApiService < Component
     twitter_id = twitter_url[2]
     token = ENV['TWITTER_BEARER_TOKEN']
     client = SimpleTwitter::Client.new(bearer_token: token)
-    response = client.get_raw(Constants::URLs::TWITTER + twitter_id + '?tweet.fields=created_at,attachments,possibly_sensitive,public_metrics&expansions=author_id,attachments.media_keys&user.fields=profile_image_url&media.fields=media_key,type,url')
+    response = client.get_raw(Constants::URLs::TWITTER + twitter_id + '?tweet.fields=created_at,attachments,possibly_sensitive,public_metrics,entities&expansions=author_id,attachments.media_keys&user.fields=profile_image_url&media.fields=media_key,type,url')
     parsed_response = JSON.parse(response)
+
+    v1response = client.get_raw('https://api.twitter.com/1.1/statuses/show.json?id=' + twitter_id)
+    parsed_v1response = JSON.parse(v1response)
 
     return if parsed_response['data']['possibly_sensitive'] == false
     return if parsed_response['includes']['media'][0]['type'] == 'video'
+    return if parsed_v1response['extended_entities']['media'][0]['sizes'].keys[0] == 'thumb'
 
     likes = parsed_response['data']['public_metrics']['like_count']
     rts = parsed_response['data']['public_metrics']['retweet_count']
