@@ -82,7 +82,7 @@ class ApiService < Component
     uri = URI.parse('https://discord.com/api/channels/' + event_msg_ch + '/messages/' + event_msg_id)
     res = Net::HTTP.get_response(uri, 'Authorization' => "Bot #{TOKEN}")
     parsed_res = JSON.parse(res.body)
-    unless parsed_res['embeds'].empty?
+    if parsed_res['embeds'].empty?
       # ツイート情報を取得する
       content = event.message.content
       twitter_url = content.match(/https:\/\/twitter.com\/([a-zA-Z0-9_]+)\/status\/([0-9]+)/)
