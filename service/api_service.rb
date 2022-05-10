@@ -76,43 +76,48 @@ class ApiService < Component
 
   # TwitterNSFWサムネイル表示
   def twitter_thumbnail(event)
-    # ツイート情報を取得する
-    content = event.message.content
-    twitter_url = content.match(/https:\/\/twitter.com\/([a-zA-Z0-9_]+)\/status\/([0-9]+)/)
-    twitter_id = twitter_url[2]
-    token = ENV['TWITTER_BEARER_TOKEN']
-    client = SimpleTwitter::Client.new(bearer_token: token)
-    response = client.get_raw(Constants::URLs::TWITTER + twitter_id + '?tweet.fields=created_at,attachments,possibly_sensitive,public_metrics,entities&expansions=author_id,attachments.media_keys&user.fields=profile_image_url&media.fields=media_key,type,url')
-    parsed_response = JSON.parse(response)
+    # discordが展開しているか確認する
+    event_msg_id = event.message.id.to_s
+    event_msg_ch = event.message.channel.id.to_s
+    uri = URI.parse('https://discord.com/api/channels/' + event_msg_ch + '/messages/' + event_msg_id)
+    res = Net::HTTP.get_response(uri, 'Authorization' => "Bot #{TOKEN}")
+    parsed_res = JSON.parse(res.body)
+    unless parsed_res['embeds'].empty?
+      # ツイート情報を取得する
+      content = event.message.content
+      twitter_url = content.match(/https:\/\/twitter.com\/([a-zA-Z0-9_]+)\/status\/([0-9]+)/)
+      twitter_id = twitter_url[2]
+      token = ENV['TWITTER_BEARER_TOKEN']
+      client = SimpleTwitter::Client.new(bearer_token: token)
+      response = client.get_raw(Constants::URLs::TWITTER + twitter_id + '?tweet.fields=created_at,attachments,possibly_sensitive,public_metrics,entities&expansions=author_id,attachments.media_keys&user.fields=profile_image_url&media.fields=media_key,type,url')
+      parsed_response = JSON.parse(response)
 
-    # v1response = client.get_raw('https://api.twitter.com/1.1/statuses/show.json?id=' + twitter_id)
-    # parsed_v1response = JSON.parse(v1response)
+      # sensitiveか、mediaがvideoでないか確認する
+      return if parsed_response['data']['possibly_sensitive'] == false
+      return if parsed_response['includes']['media'][0]['type'] == 'video'
 
-    return if parsed_response['data']['possibly_sensitive'] == false
-    return if parsed_response['includes']['media'][0]['type'] == 'video'
-    # return if parsed_v1response['extended_entities']['media'][0]['sizes'].keys[0] == 'thumb'
-
-    likes = parsed_response['data']['public_metrics']['like_count']
-    rts = parsed_response['data']['public_metrics']['retweet_count']
-    footer_text = "#{likes} Favs, #{rts} RTs"
-    author_name = parsed_response['includes']['users'][0]['name']
-    author_icon = parsed_response['includes']['users'][0]['profile_image_url']
-    author_url = "https://twitter.com/#{parsed_response['includes']['users'][0]['username']}"
-    event.send_embed do |embed|
-      embed.description = parsed_response['data']['text']
-      embed.colour = 0x1DA1F2
-      embed.timestamp = Time.parse(parsed_response['data']['created_at'])
-      embed.footer = Discordrb::Webhooks::EmbedFooter.new(
-        text: footer_text
-      )
-      embed.author = Discordrb::Webhooks::EmbedAuthor.new(
-        name: author_name,
-        url: author_url,
-        icon_url: author_icon
-      )
-    end
-    parsed_response['includes']['media'].each do |n|
-      event.respond n['url']
+      likes = parsed_response['data']['public_metrics']['like_count']
+      rts = parsed_response['data']['public_metrics']['retweet_count']
+      footer_text = "#{likes} Favs, #{rts} RTs"
+      author_name = parsed_response['includes']['users'][0]['name']
+      author_icon = parsed_response['includes']['users'][0]['profile_image_url']
+      author_url = "https://twitter.com/#{parsed_response['includes']['users'][0]['username']}"
+      event.send_embed do |embed|
+        embed.description = parsed_response['data']['text']
+        embed.colour = 0x1DA1F2
+        embed.timestamp = Time.parse(parsed_response['data']['created_at'])
+        embed.footer = Discordrb::Webhooks::EmbedFooter.new(
+          text: footer_text
+        )
+        embed.author = Discordrb::Webhooks::EmbedAuthor.new(
+          name: author_name,
+          url: author_url,
+          icon_url: author_icon
+        )
+      end
+      parsed_response['includes']['media'].each do |n|
+        event.respond n['url']
+      end
     end
   end
 end
