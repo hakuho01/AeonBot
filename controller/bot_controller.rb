@@ -5,6 +5,7 @@ require './framework/component'
 require './service/bot_service'
 require './service/asasore_service'
 require './service/api_service'
+require './service/test_service'
 
 Dotenv.load
 IS_LOCAL = ENV['IS_LOCAL']
@@ -16,6 +17,7 @@ class BotController < Component
     @service = BotService.instance.init(bot)
     @asasore_service = AsasoreService.instance.init
     @api_service = ApiService.instance.init
+    @test_service = TestService.instance.init
   end
 
   public
@@ -62,6 +64,8 @@ class BotController < Component
       @service.roll_dice(args, event)
     when :rand
       @service.random_choice(args, event)
+    when :test
+      @test_service.testing(args, event)
     end
   end
 
