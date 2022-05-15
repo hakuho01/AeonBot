@@ -115,22 +115,22 @@ class ApiService < Component
           icon_url: author_icon
         )
       end
-      uri = URI.parse('https://discord.com/api/channels/' + event_msg_ch + '/messages/')
-      http = Net::HTTP.new(uri.host, uri.port)
-      http.use_ssl = true
-      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+      # uri = URI.parse('https://discord.com/api/channels/' + event_msg_ch + '/messages/')
+      # http = Net::HTTP.new(uri.host, uri.port)
+      # http.use_ssl = true
+      # http.verify_mode = OpenSSL::SSL::VERIFY_NONE
 
-      request = Net::HTTP::Post.new(uri.request_uri)
-      request.body = { name: 'web', config: { url: 'hogehogehogehoge' } }.to_json
-      request['Authorization'] = "Bot #{TOKEN}"
-      request['Content-Type'] = 'application/json'
+      # request = Net::HTTP::Post.new(uri.request_uri)
+      # request.body = { name: 'web', config: { url: 'hogehogehogehoge' } }.to_json
+      # request['Authorization'] = "Bot #{TOKEN}"
+      # request['Content-Type'] = 'application/json'
 
-      res = http.request(request)
+      # res = http.request(request)
 
-      puts res.code, res.msg, res.body
-      # parsed_response['includes']['media'].each do |n|
-      #   event.respond n['url']
-      # end
+      # puts res.code, res.msg, res.body
+      parsed_response['includes']['media'].each do |n|
+        event.respond n['url']
+      end
     end
   end
 end
