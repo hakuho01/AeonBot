@@ -93,8 +93,7 @@ class ApiService < Component
       response = client.get_raw(Constants::URLs::TWITTER + twitter_id + '?tweet.fields=created_at,attachments,possibly_sensitive,public_metrics,entities&expansions=author_id,attachments.media_keys&user.fields=profile_image_url&media.fields=media_key,type,url')
       parsed_response = JSON.parse(response)
 
-      # sensitiveか、mediaがvideoでないか確認する
-      return if parsed_response['data']['possibly_sensitive'] == false
+      #mediaがvideoでないか確認する
       return if parsed_response['includes']['media'][0]['type'] == 'video'
 
       likes = parsed_response['data']['public_metrics']['like_count']
@@ -116,9 +115,22 @@ class ApiService < Component
           icon_url: author_icon
         )
       end
-      parsed_response['includes']['media'].each do |n|
-        event.respond n['url']
-      end
+      uri = URI.parse('https://discord.com/api/channels/' + event_msg_ch + '/messages/')
+      http = Net::HTTP.new(uri.host, uri.port)
+      http.use_ssl = true
+      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+
+      request = Net::HTTP::Post.new(uri.request_uri)
+      request.body = { name: 'web', config: { url: 'hogehogehogehoge' } }.to_json
+      request['Authorization'] = "Bot #{TOKEN}"
+      request['Content-Type'] = 'application/json'
+
+      res = http.request(request)
+
+      puts res.code, res.msg, res.body
+      # parsed_response['includes']['media'].each do |n|
+      #   event.respond n['url']
+      # end
     end
   end
 end
