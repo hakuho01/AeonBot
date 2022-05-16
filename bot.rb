@@ -54,6 +54,11 @@ bot.message(contains: /{{/) do |event|
   bot_controller.handle_message(event, :wg)
 end
 
+# Wisdom Guild
+bot.message(contains: /\[\[/) do |event|
+  bot_controller.handle_message(event, :dfc)
+end
+
 # bot起動
 bot.run(true)
 

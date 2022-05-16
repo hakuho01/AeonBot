@@ -74,6 +74,41 @@ class ApiService < Component
   #      ApiUtil::get(wgurl)
   end
 
+  # ScryfallDFC
+  def scryfall(event)
+    cardname = event.message.to_s.slice(/\[\[.*?\]\]/)[2..-3]
+    # 画像要求かの確認
+    if cardname.chr == '!'
+      put_img_flg = true
+      cardname.delete!('!')
+    end
+    encoded_cardname = CGI.escape(cardname)
+    html = URI.open('http://whisper.wisdom-guild.net/search.php?q=' + encoded_cardname).read
+    doc = Nokogiri::HTML.parse(html)
+    h1_txt = doc.at_css('h1').text
+    cardname_en = h1_txt.split('/')[1]
+    encoded_cardname_en = CGI.escape(cardname_en)
+    gatherer = ApiUtil.get('https://api.magicthegathering.io/v1/cards?name=' + encoded_cardname_en)
+    puts gatherer['cards'][0]['layout']
+    return if gatherer['cards'][0]['layout'] != 'transform' && gatherer['cards'][0]['layout'] != 'modal_dfc'
+
+    if put_img_flg
+    else
+      q = doc.at_css('.owl-tip-mtgwiki').attribute('q').to_s
+      q.gsub!('%2F', '/')
+      q.gsub!('+', '_')
+      html = URI.open('http://mtgwiki.com/wiki/' + q).read
+      doc = Nokogiri::HTML.parse(html)
+      card_text = doc.at_css('.card').text
+      event.send_embed do |embed|
+        embed.title = h1_txt
+        # embed.url = 'http://wonder.wisdom-guild.net/price/' + encoded_accurate_cardname
+        embed.description = card_text
+        embed.colour = 0x6EB0FF
+      end
+    end
+  end
+
   # TwitterNSFWサムネイル表示
   def twitter_thumbnail(event)
     # discordが展開しているか確認する
