@@ -35,15 +35,28 @@ end
 bot.command :rand do |event, *args|
   bot_controller.handle_command(event, args, :rand)
 end
+bot.command :test do |event, *args|
+  bot_controller.handle_command(event, args, :test)
+end
 
 # ハッシュ検知時の反応
 bot.message(contains: /^(?!.*http)(?!.*<@)(?!.*<#)(?!.*<:)(?!.*<a:)(?!.*<t:)(?!^AA.+A$)[!-~]{19,}$/) do |event|
   bot_controller.handle_message(event, :hash)
 end
 
+# TwiiterのNSFWサムネイル表示
+bot.message(contains: (/https:\/\/twitter.com\/([a-zA-Z0-9_]+)\/status\/([0-9]+)/)) do |event|
+  bot_controller.handle_message(event, :thumb)
+end
+
 # Wisdom Guild
 bot.message(contains: /{{/) do |event|
   bot_controller.handle_message(event, :wg)
+end
+
+# Wisdom Guild
+bot.message(contains: /\[\[/) do |event|
+  bot_controller.handle_message(event, :dfc)
 end
 
 # bot起動

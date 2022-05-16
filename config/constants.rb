@@ -82,5 +82,6 @@ module Constants
     BC_DICE = 'https://bcdice.onlinesession.app'
     BC_DICE_BACKUP = 'https://bcdice.museru.com/org'
     ASASORE = 'https://soreseikai.com/'
+    TWITTER = 'https://api.twitter.com/2/tweets/'
   end
 end

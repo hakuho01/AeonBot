@@ -8,9 +8,10 @@ require 'open-uri'
 require 'nokogiri'
 require 'openssl'
 require 'cgi'
+require 'simple_twitter'
+require 'time'
 
 class ApiService < Component
-
   # 楽天
   def rakuten(event)
     parsed_response = ApiUtil.get(Constants::URLs::RAKUTEN_GENRE)
@@ -45,6 +46,7 @@ class ApiService < Component
     end
   end
 
+  # wisdom guild
   def wisdom_guild(event)
     cardname = event.message.to_s.slice(/{{.*?}}/)[2..-3]
     encoded_cardname = CGI.escape(cardname)
@@ -70,5 +72,100 @@ class ApiService < Component
   #      wgurl = 'http://wonder.wisdom-guild.net/api/card-price/v1/' << '?' << 'api_key=hakuho01&name=' << cardname << '&timestamp=' << unixtime.to_s << '&api_sig=' << api_sig
   #      puts wgurl
   #      ApiUtil::get(wgurl)
+  end
+
+  # ScryfallDFC
+  def scryfall(event)
+    cardname = event.message.to_s.slice(/\[\[.*?\]\]/)[2..-3]
+    # 画像要求かの確認
+    if cardname.chr == '!'
+      put_img_flg = true
+      cardname.delete!('!')
+    end
+    encoded_cardname = CGI.escape(cardname)
+    html = URI.open('http://whisper.wisdom-guild.net/search.php?q=' + encoded_cardname).read
+    doc = Nokogiri::HTML.parse(html)
+    h1_txt = doc.at_css('h1').text
+    cardname_en = h1_txt.split('/')[1]
+    encoded_cardname_en = CGI.escape(cardname_en)
+    gatherer = ApiUtil.get('https://api.magicthegathering.io/v1/cards?name=' + encoded_cardname_en)
+    puts gatherer['cards'][0]['layout']
+    return if gatherer['cards'][0]['layout'] != 'transform' && gatherer['cards'][0]['layout'] != 'modal_dfc'
+
+    if put_img_flg
+    else
+      q = doc.at_css('.owl-tip-mtgwiki').attribute('q').to_s
+      q.gsub!('%2F', '/')
+      q.gsub!('+', '_')
+      html = URI.open('http://mtgwiki.com/wiki/' + q).read
+      doc = Nokogiri::HTML.parse(html)
+      card_text = doc.at_css('.card').text
+      event.send_embed do |embed|
+        embed.title = h1_txt
+        # embed.url = 'http://wonder.wisdom-guild.net/price/' + encoded_accurate_cardname
+        embed.description = card_text
+        embed.colour = 0x6EB0FF
+      end
+    end
+  end
+
+  # TwitterNSFWサムネイル表示
+  def twitter_thumbnail(event)
+    # discordが展開しているか確認する
+    sleep 2
+    event_msg_id = event.message.id.to_s
+    event_msg_ch = event.message.channel.id.to_s
+    uri = URI.parse('https://discord.com/api/channels/' + event_msg_ch + '/messages/' + event_msg_id)
+    res = Net::HTTP.get_response(uri, 'Authorization' => "Bot #{TOKEN}")
+    parsed_res = JSON.parse(res.body)
+    if parsed_res['embeds'].empty?
+      # ツイート情報を取得する
+      content = event.message.content
+      twitter_url = content.match(/https:\/\/twitter.com\/([a-zA-Z0-9_]+)\/status\/([0-9]+)/)
+      twitter_id = twitter_url[2]
+      token = ENV['TWITTER_BEARER_TOKEN']
+      client = SimpleTwitter::Client.new(bearer_token: token)
+      response = client.get_raw(Constants::URLs::TWITTER + twitter_id + '?tweet.fields=created_at,attachments,possibly_sensitive,public_metrics,entities&expansions=author_id,attachments.media_keys&user.fields=profile_image_url&media.fields=media_key,type,url')
+      parsed_response = JSON.parse(response)
+
+      #mediaがvideoでないか確認する
+      return if parsed_response['includes']['media'][0]['type'] == 'video'
+
+      likes = parsed_response['data']['public_metrics']['like_count']
+      rts = parsed_response['data']['public_metrics']['retweet_count']
+      footer_text = "#{likes} Favs, #{rts} RTs"
+      author_name = parsed_response['includes']['users'][0]['name']
+      author_icon = parsed_response['includes']['users'][0]['profile_image_url']
+      author_url = "https://twitter.com/#{parsed_response['includes']['users'][0]['username']}"
+      event.send_embed do |embed|
+        embed.description = parsed_response['data']['text']
+        embed.colour = 0x1DA1F2
+        embed.timestamp = Time.parse(parsed_response['data']['created_at'])
+        embed.footer = Discordrb::Webhooks::EmbedFooter.new(
+          text: footer_text
+        )
+        embed.author = Discordrb::Webhooks::EmbedAuthor.new(
+          name: author_name,
+          url: author_url,
+          icon_url: author_icon
+        )
+      end
+      # uri = URI.parse('https://discord.com/api/channels/' + event_msg_ch + '/messages/')
+      # http = Net::HTTP.new(uri.host, uri.port)
+      # http.use_ssl = true
+      # http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+
+      # request = Net::HTTP::Post.new(uri.request_uri)
+      # request.body = { name: 'web', config: { url: 'hogehogehogehoge' } }.to_json
+      # request['Authorization'] = "Bot #{TOKEN}"
+      # request['Content-Type'] = 'application/json'
+
+      # res = http.request(request)
+
+      # puts res.code, res.msg, res.body
+      parsed_response['includes']['media'].each do |n|
+        event.respond n['url']
+      end
+    end
   end
 end

@@ -7,6 +7,7 @@ gem 'discordrb'
 gem 'dotenv'
 gem 'mini_magick'
 gem 'nokogiri'
+gem 'simple_twitter'
 
 group :development do
   gem 'rubocop'
