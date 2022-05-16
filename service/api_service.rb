@@ -89,10 +89,18 @@ class ApiService < Component
     cardname_en = h1_txt.split('/')[1]
     encoded_cardname_en = CGI.escape(cardname_en)
     gatherer = ApiUtil.get('https://api.magicthegathering.io/v1/cards?name=' + encoded_cardname_en)
-    puts gatherer['cards'][0]['layout']
     return if gatherer['cards'][0]['layout'] != 'transform' && gatherer['cards'][0]['layout'] != 'modal_dfc'
 
     if put_img_flg
+      2.times do |n|
+        multiverseid = gatherer['cards'][n]['multiverseid']
+        imageurl = gatherer['cards'][n]['imageUrl']
+        event.send_embed do |embed|
+          embed.url = 'https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=' + multiverseid
+          embed.image = Discordrb::Webhooks::EmbedImage.new(url: imageurl)
+          embed.colour = 0x2B253A
+        end
+      end
     else
       q = doc.at_css('.owl-tip-mtgwiki').attribute('q').to_s
       q.gsub!('%2F', '/')
@@ -100,11 +108,12 @@ class ApiService < Component
       html = URI.open('http://mtgwiki.com/wiki/' + q).read
       doc = Nokogiri::HTML.parse(html)
       card_text = doc.at_css('.card').text
+      multiverseid = gatherer['cards'][0]['multiverseid']
       event.send_embed do |embed|
         embed.title = h1_txt
-        # embed.url = 'http://wonder.wisdom-guild.net/price/' + encoded_accurate_cardname
+        embed.url = 'https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=' + multiverseid
         embed.description = card_text
-        embed.colour = 0x6EB0FF
+        embed.colour = 0x2B253A
       end
     end
   end
