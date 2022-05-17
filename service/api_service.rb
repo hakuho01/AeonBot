@@ -48,17 +48,18 @@ class ApiService < Component
 
   # wisdom guild
   def wisdom_guild(event)
+    wgurl = Constants::URLs::WISDOM_GUILD_URL
     cardname = event.message.to_s.slice(/{{.*?}}/)[2..-3]
     encoded_cardname = CGI.escape(cardname)
     scryfall = ApiUtil.get('https://api.scryfall.com/cards/named?fuzzy=' + encoded_cardname)
     encoded_accurate_cardname = CGI.escape(scryfall['name'])
-    html = URI.open('http://wonder.wisdom-guild.net/price/' + encoded_accurate_cardname).read
+    html = URI.open(wgurl + encoded_accurate_cardname).read
     doc = Nokogiri::HTML.parse(html)
     price = doc.at_css('.wg-wonder-price-summary > .contents > big').text
     name_jp = doc.at_css('.wg-title').text
     event.send_embed do |embed|
       embed.title = name_jp
-      embed.url = 'http://wonder.wisdom-guild.net/price/' + encoded_accurate_cardname
+      embed.url = wgurl + encoded_accurate_cardname
       embed.description = price
       embed.colour = 0x6EB0FF
     end

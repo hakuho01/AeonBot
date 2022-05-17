@@ -83,5 +83,6 @@ module Constants
     BC_DICE_BACKUP = 'https://bcdice.museru.com/org'
     ASASORE = 'https://soreseikai.com/'
     TWITTER = 'https://api.twitter.com/2/tweets/'
+    WISDOM_GUILD_URL = 'http://wonder.wisdom-guild.net/price/'
   end
 end
