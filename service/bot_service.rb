@@ -63,7 +63,7 @@ class BotService < Component
     if @dice_repository.trpg_systems.include? args.last
       trpg_system = args.pop
       event.respond "<@!#{event.user.id}>" << @dice_repository.roll(args.join(' '), trpg_system)
-    elsif
+    else
       event.respond "<@!#{event.user.id}>" << @dice_repository.roll(args.join(' '))
     end
   end

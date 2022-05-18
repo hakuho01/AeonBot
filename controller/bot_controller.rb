@@ -77,6 +77,8 @@ class BotController < Component
       @api_service.twitter_thumbnail(event)
     when :wg
       @api_service.wisdom_guild(event)
+    when :dfc
+      @api_service.scryfall(event)
     end
   end
 end
