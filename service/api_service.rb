@@ -92,12 +92,15 @@ class ApiService < Component
     gatherer = ApiUtil.get('https://api.magicthegathering.io/v1/cards?name=' + encoded_cardname_en)
     return if gatherer['cards'][0]['layout'] != 'transform' && gatherer['cards'][0]['layout'] != 'modal_dfc'
 
+    scryfall = ApiUtil.get('https://api.scryfall.com/cards/search?q=' + encoded_cardname_en)
+    scryfall_url = scryfall['data'][0]['scryfall_uri']
     if put_img_flg
       2.times do |n|
-        multiverseid = gatherer['cards'][n]['multiverseid']
-        imageurl = gatherer['cards'][n]['imageUrl']
+        imageurl = scryfall['data'][0]['card_faces'][n]['image_uris']['png']
+        card_title = scryfall['data'][0]['card_faces'][n]['name']
         event.send_embed do |embed|
-          embed.url = 'https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=' + multiverseid
+          embed.title = card_title
+          embed.url = scryfall_url
           embed.image = Discordrb::Webhooks::EmbedImage.new(url: imageurl)
           embed.colour = 0x2B253A
         end
@@ -109,10 +112,9 @@ class ApiService < Component
       html = URI.open('http://mtgwiki.com/wiki/' + q).read
       doc = Nokogiri::HTML.parse(html)
       card_text = doc.at_css('.card').text
-      multiverseid = gatherer['cards'][0]['multiverseid']
       event.send_embed do |embed|
         embed.title = h1_txt
-        embed.url = 'https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=' + multiverseid
+        embed.url = scryfall_url
         embed.description = card_text
         embed.colour = 0x2B253A
       end
