@@ -6,6 +6,7 @@ require './service/bot_service'
 require './service/asasore_service'
 require './service/api_service'
 require './service/test_service'
+require './service/twitter_open_service'
 
 Dotenv.load
 IS_LOCAL = ENV['IS_LOCAL']
@@ -18,6 +19,7 @@ class BotController < Component
     @asasore_service = AsasoreService.instance.init
     @api_service = ApiService.instance.init
     @test_service = TestService.instance.init
+    @twitter_open_service = TwitterOpenService.instance.init
   end
 
   public
@@ -66,6 +68,8 @@ class BotController < Component
       @service.random_choice(args, event)
     when :test
       @test_service.testing(args, event)
+    when :open
+      @twitter_open_service.tweet_opening(args, event)
     end
   end
 
