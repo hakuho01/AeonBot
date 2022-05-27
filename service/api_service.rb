@@ -149,35 +149,37 @@ class ApiService < Component
       author_name = parsed_response['includes']['users'][0]['name']
       author_icon = parsed_response['includes']['users'][0]['profile_image_url']
       author_url = "https://twitter.com/#{parsed_response['includes']['users'][0]['username']}"
-      event.send_embed do |embed|
-        embed.description = parsed_response['data']['text']
-        embed.colour = 0x1DA1F2
-        embed.timestamp = Time.parse(parsed_response['data']['created_at'])
-        embed.footer = Discordrb::Webhooks::EmbedFooter.new(
-          text: footer_text
-        )
-        embed.author = Discordrb::Webhooks::EmbedAuthor.new(
-          name: author_name,
-          url: author_url,
-          icon_url: author_icon
-        )
+      json_template = {
+        "embeds": [
+          {
+            "url": twitter_url.to_s,
+            "description": parsed_response['data']['text'],
+            "author": {
+              "name": author_name,
+              "url": author_url,
+              "icon_url": author_icon
+            },
+            "color": 0x1DA1F2,
+            "footer": {
+              "text": footer_text
+            },
+            "image": { "url": parsed_response['includes']['media'][0]['url'] }
+          }
+        ]
+      }
+      parsed_response['includes']['media'].each_with_index do |n, i|
+        next if i.zero?
+
+        json_template[:embeds].push({ "url": twitter_url, "image": { "url": n['url'] } })
       end
-      # uri = URI.parse('https://discord.com/api/channels/' + event_msg_ch + '/messages/')
-      # http = Net::HTTP.new(uri.host, uri.port)
-      # http.use_ssl = true
-      # http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-
-      # request = Net::HTTP::Post.new(uri.request_uri)
-      # request.body = { name: 'web', config: { url: 'hogehogehogehoge' } }.to_json
-      # request['Authorization'] = "Bot #{TOKEN}"
-      # request['Content-Type'] = 'application/json'
-
-      # res = http.request(request)
-
-      # puts res.code, res.msg, res.body
-      parsed_response['includes']['media'].each do |n|
-        event.respond n['url']
-      end
+      uri = URI.parse('https://discordapp.com/api/channels/' + event_msg_ch + '/messages')
+      http = Net::HTTP.new(uri.host, uri.port)
+      http.use_ssl = uri.scheme === 'https'
+      params = json_template
+      headers = { 'Content-Type' => 'application/json', 'Authorization' => "Bot #{TOKEN}" }
+      response = http.post(uri.path, params.to_json, headers)
+      response.code
+      response.body
     end
   end
 end
