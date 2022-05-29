@@ -148,7 +148,7 @@ class ApiService < Component
 
       likes = parsed_response['data']['public_metrics']['like_count']
       rts = parsed_response['data']['public_metrics']['retweet_count']
-      footer_text = "#{likes} Favs, #{rts} RTs, "
+      footer_text = "#{likes} Favs, #{rts} RTs"
       author_name = parsed_response['includes']['users'][0]['name']
       author_icon = parsed_response['includes']['users'][0]['profile_image_url']
       author_url = "https://twitter.com/#{parsed_response['includes']['users'][0]['username']}"
@@ -174,7 +174,7 @@ class ApiService < Component
         next if i.zero?
 
         json_template[:embeds].push({ "url": twitter_url, "image": { "url": n['url'] } })
-        json_template[:embeds][0][:footer][:text] = footer_text + ( i + 1 ).to_s + ' images'
+        json_template[:embeds][0][:footer][:text] = footer_text + ', ' + ( i + 1 ).to_s + ' images'
       end
       uri = URI.parse('https://discordapp.com/api/channels/' + event_msg_ch + '/messages')
       http = Net::HTTP.new(uri.host, uri.port)
