@@ -48,7 +48,7 @@ bot.message(contains: /^(?!.*http)(?!.*<@)(?!.*<#)(?!.*<:)(?!.*<a:)(?!.*<t:)(?!^
 end
 
 # TwiiterのNSFWサムネイル表示
-bot.message(contains: (/https:\/\/twitter.com\/([a-zA-Z0-9_]+)\/status\/([0-9]+)/)) do |event|
+bot.message(contains: %r{https://twitter.com/([a-zA-Z0-9_]+)/status/([0-9]+)}) do |event|
   bot_controller.handle_message(event, :thumb)
 end
 
