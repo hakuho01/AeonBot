@@ -4,11 +4,11 @@ class TwitterOpenService < Component
   def tweet_opening(args, event)
     # ツイート情報を取得する
     content = args[0]
-    twitter_url = content.match(/https:\/\/twitter.com\/([a-zA-Z0-9_]+)\/status\/([0-9]+)/)
+    twitter_url = content.match(%r{https://twitter.com/([a-zA-Z0-9_]+)/status/([0-9]+)})
     twitter_id = twitter_url[2]
     token = ENV['TWITTER_BEARER_TOKEN']
     client = SimpleTwitter::Client.new(bearer_token: token)
-    response = client.get_raw(Constants::URLs::TWITTER + twitter_id + '?tweet.fields=created_at,attachments,possibly_sensitive,public_metrics,entities&expansions=author_id,attachments.media_keys&user.fields=profile_image_url&media.fields=media_key,type,url')
+    response = client.get_raw("#{Constants::URLs::TWITTER}#{twitter_id}?tweet.fields=created_at,attachments,possibly_sensitive,public_metrics,entities&expansions=author_id,attachments.media_keys&user.fields=profile_image_url&media.fields=media_key,type,url")
     parsed_response = JSON.parse(response)
 
     likes = parsed_response['data']['public_metrics']['like_count']
