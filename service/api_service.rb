@@ -176,6 +176,10 @@ class ApiService < Component
         json_template[:embeds].push({ "url": twitter_url, "image": { "url": n['url'] } })
         json_template[:embeds][0][:footer][:text] = "#{footer_text}, #{i + 1} images"
       end
+      tweeted_time = Time.parse(parsed_response['data']['created_at'])
+      jst_tweeted_time = Time.at(tweeted_time, in: '+09:00')
+      jst_tweeted_time = jst_tweeted_time.strftime('%y年%m月%d日 %H:%M')
+      json_template[:embeds][0][:footer][:text] = "#{json_template[:embeds][0][:footer][:text]}       #{jst_tweeted_time}"
       uri = URI.parse("https://discordapp.com/api/channels/#{event_msg_ch}/messages")
       http = Net::HTTP.new(uri.host, uri.port)
       http.use_ssl = uri.scheme === 'https'
