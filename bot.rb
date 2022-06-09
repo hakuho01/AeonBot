@@ -43,7 +43,7 @@ bot.command :open do |event, *args|
 end
 
 # ハッシュ検知時の反応
-bot.message(contains: /^(?!.*http)(?!.*<@)(?!.*<#)(?!.*<:)(?!.*<a:)(?!.*<t:)(?!^AA.+A$)[!-~]{19,}$/) do |event|
+bot.message(contains: /^(?!.*http)(?!.*<@)(?!.*<#)(?!.*<:)(?!.*<a:)(?!.*<t:)(?!.*[[.*|?.*]])(?!^AA.+A$)[!-~]{19,}$/) do |event|
   bot_controller.handle_message(event, :hash)
 end
 
