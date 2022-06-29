@@ -8,6 +8,7 @@ gem 'dotenv'
 gem 'mini_magick'
 gem 'nokogiri'
 gem 'simple_twitter'
+gem 'pg'
 
 group :development do
   gem 'rubocop'
