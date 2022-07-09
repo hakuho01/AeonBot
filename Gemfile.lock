@@ -85,6 +85,7 @@ GEM
     rubocop-ast (1.15.1)
       parser (>= 3.0.1.1)
     ruby-progressbar (1.11.0)
+    sequel (5.58.0)
     simple_oauth (0.3.1)
     simple_twitter (1.0.0)
       http (~> 4)
@@ -111,6 +112,7 @@ DEPENDENCIES
   pg
   rspec
   rubocop
+  sequel
   simple_twitter
 
 RUBY VERSION

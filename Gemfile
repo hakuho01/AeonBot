@@ -9,6 +9,7 @@ gem 'mini_magick'
 gem 'nokogiri'
 gem 'simple_twitter'
 gem 'pg'
+gem 'sequel'
 
 group :development do
   gem 'rubocop'
