@@ -134,6 +134,8 @@ class ApiService < Component
 
     # ツイート情報を取得する
     content = event.message.content
+    return if content.match(/\|\|http/) # 埋め込みがなくてもスポイラーなら展開しない
+
     twitter_urls = content.scan(%r{https://twitter.com/[a-zA-Z0-9_]+/status/[0-9]+})
 
     twitter_urls.each do |twitter_url|
