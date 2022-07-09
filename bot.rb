@@ -41,6 +41,9 @@ end
 bot.command :open do |event, *args|
   bot_controller.handle_command(event, args, :open)
 end
+bot.command :plane do |event, *args|
+  bot_controller.handle_command(event, args, :plane)
+end
 
 # ハッシュ検知時の反応
 bot.message(contains: /^(?!.*http)(?!.*<@)(?!.*<#)(?!.*<:)(?!.*<a:)(?!.*<t:)(?!.*[[.*|?.*]])(?!^AA.+A$)[!-~]{19,}$/) do |event|
