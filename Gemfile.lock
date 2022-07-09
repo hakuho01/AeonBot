@@ -48,6 +48,7 @@ GEM
     parallel (1.21.0)
     parser (3.1.0.0)
       ast (~> 2.4.1)
+    pg (1.4.1)
     public_suffix (4.0.7)
     racc (1.6.0)
     rainbow (3.1.1)
@@ -84,6 +85,7 @@ GEM
     rubocop-ast (1.15.1)
       parser (>= 3.0.1.1)
     ruby-progressbar (1.11.0)
+    sequel (5.58.0)
     simple_oauth (0.3.1)
     simple_twitter (1.0.0)
       http (~> 4)
@@ -107,8 +109,10 @@ DEPENDENCIES
   dotenv
   mini_magick
   nokogiri
+  pg
   rspec
   rubocop
+  sequel
   simple_twitter
 
 RUBY VERSION
