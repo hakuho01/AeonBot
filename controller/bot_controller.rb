@@ -12,6 +12,7 @@ require './service/favstar_service'
 
 Dotenv.load
 IS_LOCAL = ENV['IS_LOCAL']
+KUSA_ID = ENV['KUSA_ID']
 
 class BotController < Component
   private
@@ -29,7 +30,7 @@ class BotController < Component
   public
 
   def reaction_control(event)
-    if event.emoji.id == 890870254673203230
+    if event.emoji.id == KUSA_ID.to_i
       @favstar_service.memory_fav(event)
     end
   end

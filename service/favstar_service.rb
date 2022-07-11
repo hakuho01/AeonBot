@@ -5,7 +5,6 @@ require './framework/component'
 
 Dotenv.load
 FAVSTAR_CH_ID = ENV['FAVSTAR_CH_ID']
-KUSA_ID = ENV['KUSA_ID']
 
 class FavstarService < Component
   private
