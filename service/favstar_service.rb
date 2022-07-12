@@ -29,7 +29,7 @@ class FavstarService < Component
     @favstar_repository.add_faved_message(message_id)
 
     # API経由で投稿
-    timestamp = event.message.timestamp + 32400 #投稿のタイムスタンプに9時間加算して日本標準時に
+    timestamp = event.message.timestamp + 32400 # 投稿のタイムスタンプに9時間加算して日本標準時に
     req_json = {
       "embeds": [
         {
