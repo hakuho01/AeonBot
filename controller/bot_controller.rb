@@ -51,6 +51,8 @@ class BotController < Component
       @service.toss_coin(event)
     elsif message.match?(/asasore|朝それ|お題/)
       @asasore_service.asasore_theme(event)
+    elsif message.match?(/help|ヘルプ|使い方/)
+      @service.how_to_use(event)
     else
       @service.say_random(event)
     end
@@ -83,6 +85,8 @@ class BotController < Component
       @twitter_open_service.tweet_opening(args, event)
     when :plane
       @planechaser_service.planes(args, event)
+    when :prof_sheet
+      @service.show_prof_sheet(event)
     end
   end
 
