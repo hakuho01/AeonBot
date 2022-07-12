@@ -2,6 +2,7 @@
 
 require 'dotenv'
 require './framework/component'
+require './repository/favstar_repository'
 
 Dotenv.load
 FAVSTAR_CH_ID = ENV['FAVSTAR_CH_ID']
@@ -11,14 +12,24 @@ class FavstarService < Component
 
   def construct(bot)
     @bot = bot
+    @favstar_repository = FavstarRepository.instance.init
   end
 
   public
 
   def memory_fav(event)
     kusas = event.message.reactions.find { |n| n.id == KUSA_ID.to_i }.count
-    return if kusas != 10
+    return if kusas < 10 # 草が10以上であるか確認
 
+    # DBに問い合わせ、既知なら終了
+    message_id = event.message.id
+    return if @favstar_repository.check_faved_message(message_id)[:message_id]
+
+    # 新規発言はid登録
+    @favstar_repository.add_faved_message(message_id)
+
+    # API経由で投稿
+    timestamp = event.message.timestamp + 32400 #投稿のタイムスタンプに9時間加算して日本標準時に
     req_json = {
       "embeds": [
         {
@@ -29,7 +40,7 @@ class FavstarService < Component
             "icon_url": event.message.author.avatar_url
           },
           "footer": {
-            "text": event.message.timestamp.strftime('%Y/%m/%d %H:%M')
+            "text": timestamp.strftime('%Y/%m/%d %H:%M')
           }
         }
       ]
