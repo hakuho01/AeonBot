@@ -18,6 +18,11 @@ bot = Discordrb::Commands::CommandBot.new token: TOKEN, client_id: CLIENT_ID, pr
 bot_controller = BotController.instance.init(bot)
 timer_controller = TimerController.instance.init(bot)
 
+# リアクション検知時
+bot.reaction_add do |event|
+  bot_controller.reaction_control(event)
+end
+
 # メンション時の反応
 bot.mention do |event|
   bot_controller.handle_mention(event)
@@ -43,6 +48,9 @@ bot.command :open do |event, *args|
 end
 bot.command :plane do |event, *args|
   bot_controller.handle_command(event, args, :plane)
+end
+bot.command :prof_sheet do |event, *args|
+  bot_controller.handle_command(event, args, :prof_sheet)
 end
 
 # ハッシュ検知時の反応

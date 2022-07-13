@@ -59,6 +59,14 @@ class BotService < Component
     event.respond "<@!#{event.user.id}>" << Constants::Speech::TOSS_COIN.sample
   end
 
+  def how_to_use(event)
+    event.respond "<@!#{event.user.id}>" << Constants::Speech::HOW_TO_USE
+  end
+
+  def show_prof_sheet(event)
+    event.respond "<@!#{event.user.id}>……。この内容を埋めて、どこかのチャンネルに投げて。" << Constants::Speech::PROF_SHEET
+  end
+
   def roll_dice(args, event)
     if @dice_repository.trpg_systems.include? args.last
       trpg_system = args.pop

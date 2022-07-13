@@ -8,9 +8,11 @@ require './service/api_service'
 require './service/test_service'
 require './service/twitter_open_service'
 require './service/planechaser_service'
+require './service/favstar_service'
 
 Dotenv.load
 IS_LOCAL = ENV['IS_LOCAL']
+KUSA_ID = ENV['KUSA_ID']
 
 class BotController < Component
   private
@@ -22,9 +24,16 @@ class BotController < Component
     @test_service = TestService.instance.init
     @twitter_open_service = TwitterOpenService.instance.init
     @planechaser_service = PlaneChaserService.instance.init
+    @favstar_service = FavstarService.instance.init(bot)
   end
 
   public
+
+  def reaction_control(event)
+    if event.emoji.id == KUSA_ID.to_i
+      @favstar_service.memory_fav(event)
+    end
+  end
 
   def handle_mention(event)
     message = event.message.to_s
@@ -42,6 +51,8 @@ class BotController < Component
       @service.toss_coin(event)
     elsif message.match?(/asasore|朝それ|お題/)
       @asasore_service.asasore_theme(event)
+    elsif message.match?(/help|ヘルプ|使い方/)
+      @service.how_to_use(event)
     else
       @service.say_random(event)
     end
@@ -74,6 +85,8 @@ class BotController < Component
       @twitter_open_service.tweet_opening(args, event)
     when :plane
       @planechaser_service.planes(args, event)
+    when :prof_sheet
+      @service.show_prof_sheet(event)
     end
   end
 
