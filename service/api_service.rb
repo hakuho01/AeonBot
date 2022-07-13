@@ -124,7 +124,7 @@ class ApiService < Component
   # TwitterNSFWサムネイル表示
   def twitter_thumbnail(event)
     # discordが展開しているか確認する
-    sleep 2
+    sleep 5
     event_msg_id = event.message.id.to_s
     event_msg_ch = event.message.channel.id.to_s
     uri = URI.parse("https://discord.com/api/channels/#{event_msg_ch}/messages/#{event_msg_id}")
