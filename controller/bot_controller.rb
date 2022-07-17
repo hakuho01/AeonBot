@@ -9,6 +9,7 @@ require './service/test_service'
 require './service/twitter_open_service'
 require './service/planechaser_service'
 require './service/favstar_service'
+require './service/dpz_service'
 
 Dotenv.load
 IS_LOCAL = ENV['IS_LOCAL']
@@ -25,6 +26,7 @@ class BotController < Component
     @twitter_open_service = TwitterOpenService.instance.init
     @planechaser_service = PlaneChaserService.instance.init
     @favstar_service = FavstarService.instance.init(bot)
+    @dpz_service = DPZService.instance.init
   end
 
   public
@@ -100,6 +102,8 @@ class BotController < Component
       @api_service.wisdom_guild(event)
     when :dfc
       @api_service.scryfall(event)
+    when :dpz
+      @dpz_service.open_dpz(event)
     end
   end
 end

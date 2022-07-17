@@ -73,6 +73,11 @@ bot.message(contains: /\[\[/) do |event|
   bot_controller.handle_message(event, :dfc)
 end
 
+# DPZ
+bot.message(from: 952298431194488942) do |event|
+  bot_controller.handle_message(event, :dpz)
+end
+
 # bot起動
 bot.run(true)
 
