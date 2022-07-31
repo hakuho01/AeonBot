@@ -98,6 +98,8 @@ class BotController < Component
       @weight_service.draw_graph(event)
     when :asasore
       @asasore_service.asasore_start(args, event)
+    when :odai
+      @asasore_service.asasore_proxy(args, event)
     end
   end
 
