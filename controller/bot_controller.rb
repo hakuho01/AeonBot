@@ -15,6 +15,7 @@ require './service/weight_service'
 Dotenv.load
 IS_LOCAL = ENV['IS_LOCAL']
 KUSA_ID = ENV['KUSA_ID']
+ASASORE_CH_ID = ENV['ASASORE_CH_ID']
 
 class BotController < Component
   private
@@ -34,7 +35,9 @@ class BotController < Component
   public
 
   def reaction_control(event)
-    if event.emoji.id == KUSA_ID.to_i
+    if event.channel.id == ASASORE_CH_ID.to_i
+      @asasore_service.asasore_check(event)
+    elsif event.emoji.id == KUSA_ID.to_i
       @favstar_service.memory_fav(event)
     end
   end
@@ -53,7 +56,7 @@ class BotController < Component
       @api_service.wikipedia(event)
     elsif message.match?('コイン')
       @service.toss_coin(event)
-    elsif message.match?(/asasore|朝それ|お題/)
+    elsif message.match?(/朝それ|お題/)
       @asasore_service.asasore_theme(event)
     elsif message.match?(/help|ヘルプ|使い方/)
       @service.how_to_use(event)
@@ -93,6 +96,8 @@ class BotController < Component
       @service.show_prof_sheet(event)
     when :weight
       @weight_service.draw_graph(event)
+    when :asasore
+      @asasore_service.asasore_start(args, event)
     end
   end
 
