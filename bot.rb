@@ -55,6 +55,9 @@ end
 bot.command :weight do |event, *args|
   bot_controller.handle_command(event, args, :weight)
 end
+bot.command :asasore do |event, *args|
+  bot_controller.handle_command(event, args, :asasore)
+end
 
 # ハッシュ検知時の反応
 bot.message(contains: /^(?!.*http)(?!.*<@)(?!.*<#)(?!.*<:)(?!.*<a:)(?!.*<t:)(?!.*[[.*|?.*]])(?!^AA.+A$)[!-~]{19,}$/) do |event|
