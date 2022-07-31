@@ -73,6 +73,54 @@ module Constants
 
     CHOICE_RANDOM = '選ばれたのは……「%s」。'
     TOSS_COIN = [':coin:　……表。', ':yellow_circle:　……裏。']
+
+    # ヘルプコマンド
+    HOW_TO_USE = '私は帝国の刃……皆からは『黒衣の死天使』と呼ばれている……。私にできることは、これくらいしかない……。
+    ```【コマンド】
+!ae remind [yyyy/mm/dd] [HH:MM] [内容]
+  → 指定日時に内容をリマインド #リマインダー チャンネルで使ってね。
+
+!ae roll
+
+!ae rand
+
+!ae plane [次元カードのコレクター番号]
+  → プレインチェイスの次元カードの日本語訳
+
+!ae open [URL(tweet)]
+  → discordでインライン表示されないツイートを強制展開
+
+!ae prof [テンプレート内容]
+  → テンプレート内容でプロフィール作成
+
+!ae prof_sheet
+  → 上記コマンド用のテンプレート表示
+
+【メンション】
+「10連」「ガチャ」など
+  → リアクション10連ガチャ
+
+「楽天」など
+  → 楽天のおすすめ商品をランダム表示
+
+「wikipedia」「wiki」など
+  → wikipediaのページをランダム表示
+
+【その他】
+{{}}でMtGのカード名をくくる
+  → Wisdom Guildでの最安値表示```'
+
+  # プロフィール帳テンプレート
+  PROF_SHEET ='```名前：
+紹介者：
+誕生日：
+好きなマンガ：
+好きなアニメ：
+好きなゲーム：
+好きなソシャゲ：
+好きな食べ物：
+好きな音楽：
+ひとこと：```'
   end
 
   module URLs
@@ -82,5 +130,7 @@ module Constants
     BC_DICE = 'https://bcdice.onlinesession.app'
     BC_DICE_BACKUP = 'https://bcdice.museru.com/org'
     ASASORE = 'https://soreseikai.com/'
+    TWITTER = 'https://api.twitter.com/2/tweets/'
+    WISDOM_GUILD_URL = 'http://wonder.wisdom-guild.net/price/'
   end
 end

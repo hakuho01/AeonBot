@@ -9,7 +9,6 @@ FPS_CHANNEL_ID = ENV['FPS_CHANNEL_ID'].to_i
 WARN_FPS_PLAYERS_CHANNEL_ID = ENV['WARN_FPS_PLAYERS_CHANNEL_ID'].to_i
 
 class DailyTaskSerivice < Component
-  
   private
 
   def construct(bot)

@@ -3,19 +3,41 @@ require 'dotenv'
 
 require './framework/component'
 require './service/bot_service'
+require './service/asasore_service'
+require './service/api_service'
+require './service/test_service'
+require './service/twitter_open_service'
+require './service/planechaser_service'
+require './service/favstar_service'
+require './service/dpz_service'
+require './service/weight_service'
 
 Dotenv.load
 IS_LOCAL = ENV['IS_LOCAL']
+KUSA_ID = ENV['KUSA_ID']
 
 class BotController < Component
-
   private
 
   def construct(bot)
     @service = BotService.instance.init(bot)
+    @asasore_service = AsasoreService.instance.init
+    @api_service = ApiService.instance.init
+    @test_service = TestService.instance.init
+    @twitter_open_service = TwitterOpenService.instance.init
+    @planechaser_service = PlaneChaserService.instance.init
+    @favstar_service = FavstarService.instance.init(bot)
+    @dpz_service = DPZService.instance.init
+    @weight_service = WeightService.instance.init
   end
 
   public
+
+  def reaction_control(event)
+    if event.emoji.id == KUSA_ID.to_i
+      @favstar_service.memory_fav(event)
+    end
+  end
 
   def handle_mention(event)
     message = event.message.to_s
@@ -26,13 +48,15 @@ class BotController < Component
     elsif message.match?(/ガチャ|10連/)
       @service.challenge_gacha(event)
     elsif message.match?('楽天')
-      @service.suggest_rakuten(event)
+      @api_service.rakuten(event)
     elsif message.match?(/wiki/i)
-      @service.suggest_wikipedia(event)
+      @api_service.wikipedia(event)
     elsif message.match?('コイン')
       @service.toss_coin(event)
     elsif message.match?(/asasore|朝それ|お題/)
-      @service.asasore(event)
+      @asasore_service.asasore_theme(event)
+    elsif message.match?(/help|ヘルプ|使い方/)
+      @service.how_to_use(event)
     else
       @service.say_random(event)
     end
@@ -40,10 +64,10 @@ class BotController < Component
 
   def handle_command(event, args, command_type)
     case command_type
-    when :remind then
+    when :remind
       date = args[0]
       time = args[1]
-      message = args.slice(2..args.length-1).join(" ")
+      message = args.slice(2..args.length - 1).join(' ')
       if message.length <= 40  # TODO: validationはどこかに切り出したい
         begin
           @service.add_reminder(date, time, message, event)
@@ -53,19 +77,39 @@ class BotController < Component
       else
         @service.deny_too_long_reminder(event)
       end
-    when :profile then
+    when :profile
       @service.make_prof(args, event)
-    when :roll then
+    when :roll
       @service.roll_dice(args, event)
-    when :rand then
+    when :rand
       @service.random_choice(args, event)
+    when :test
+      @test_service.testing(args, event)
+    when :open
+      @twitter_open_service.tweet_opening(args, event)
+    when :plane
+      @planechaser_service.planes(args, event)
+    when :prof_sheet
+      @service.show_prof_sheet(event)
+    when :weight
+      @weight_service.draw_graph(event)
     end
   end
 
   def handle_message(event, message_type)
     case message_type
-    when :hash then
+    when :hash
       @service.judge_detected_hash(event)
+    when :thumb
+      @api_service.twitter_thumbnail(event)
+    when :wg
+      @api_service.wisdom_guild(event)
+    when :dfc
+      @api_service.scryfall(event)
+    when :dpz
+      @dpz_service.open_dpz(event)
+    when :weight
+      @weight_service.archive_weight(event)
     end
   end
 end

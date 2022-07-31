@@ -5,7 +5,6 @@ require './service/daily_task_service'
 require './service/reminder_service'
 
 class TimerController < Component
-
   private
 
   def construct(bot)
