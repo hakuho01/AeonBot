@@ -10,6 +10,7 @@ require './service/twitter_open_service'
 require './service/planechaser_service'
 require './service/favstar_service'
 require './service/dpz_service'
+require './service/weight_service'
 
 Dotenv.load
 IS_LOCAL = ENV['IS_LOCAL']
@@ -27,6 +28,7 @@ class BotController < Component
     @planechaser_service = PlaneChaserService.instance.init
     @favstar_service = FavstarService.instance.init(bot)
     @dpz_service = DPZService.instance.init
+    @weight_service = WeightService.instance.init
   end
 
   public
@@ -89,6 +91,8 @@ class BotController < Component
       @planechaser_service.planes(args, event)
     when :prof_sheet
       @service.show_prof_sheet(event)
+    when :weight
+      @weight_service.draw_graph(event)
     end
   end
 
@@ -104,6 +108,8 @@ class BotController < Component
       @api_service.scryfall(event)
     when :dpz
       @dpz_service.open_dpz(event)
+    when :weight
+      @weight_service.archive_weight(event)
     end
   end
 end
