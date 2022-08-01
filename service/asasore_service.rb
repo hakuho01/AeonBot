@@ -44,8 +44,11 @@ class AsasoreService < Component
   def asasore_check(event)
     return if event.message.embeds[0].footer.text != @timestamp # 最新のお題かチェック
 
-    players = @players
-    return if event.message.reactions.count != players
+    rs = 0
+    event.message.reactions.each do |r|
+      rs += r.count
+    end
+    return if rs != @players
 
     event.respond('みんなの準備が、できたみたい……')
   end
