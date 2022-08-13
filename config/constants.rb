@@ -146,4 +146,8 @@ module Constants
     TWITTER = 'https://api.twitter.com/2/tweets/'
     WISDOM_GUILD_URL = 'http://wonder.wisdom-guild.net/price/'
   end
+
+  module Social_gacha
+    PRICONNE_GACHA = [[79, 97], [0, 97]].freeze
+  end
 end
