@@ -25,9 +25,6 @@ class FavstarService < Component
     message_id = event.message.id
     return if @favstar_repository.check_faved_message(message_id)[:message_id]
 
-    # 新規発言はid登録
-    @favstar_repository.add_faved_message(message_id)
-
     # API経由で投稿
     timestamp = event.message.timestamp + 32400 # 投稿のタイムスタンプに9時間加算して日本標準時に
     req_json = {
@@ -64,7 +61,14 @@ class FavstarService < Component
     params = req_json
     headers = { 'Content-Type' => 'application/json', 'Authorization' => "Bot #{TOKEN}" }
     response = http.post(uri.path, params.to_json, headers)
-    response.code
-    response.body
+    begin
+      response.value
+    rescue => e
+      # エラー発生時はエラー内容を白鳳にメンションする
+      event.respond "#{e.message} <@!306022413139705858>"
+    else
+      # エラーなく投稿できたら新規発言はid登録
+      @favstar_repository.add_faved_message(message_id)
+    end
   end
 end
