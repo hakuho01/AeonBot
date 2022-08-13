@@ -15,6 +15,7 @@ describe 'BotControllerのテスト' do
     allow(AsasoreService).to receive_message_chain(:instance, :init).and_return(service)
     allow(PlaneChaserService).to receive_message_chain(:instance, :init).and_return(service)
     allow(FavstarService).to receive_message_chain(:instance, :init).and_return(service)
+    allow(WeightService).to receive_message_chain(:instance, :init).and_return(service)
   end
 
   context 'メンションが来たとき' do
@@ -217,6 +218,7 @@ describe 'BotControllerのテスト' do
     context '草の場合' do
       before do
         allow(event).to receive_message_chain(:emoji, :id).and_return(KUSA_ID.to_i)
+        allow(event).to receive_message_chain(:channel, :id).and_return(123_456)
       end
 
       it '草の数を記録する' do

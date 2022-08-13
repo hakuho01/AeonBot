@@ -52,6 +52,15 @@ end
 bot.command :prof_sheet do |event, *args|
   bot_controller.handle_command(event, args, :prof_sheet)
 end
+bot.command :weight do |event, *args|
+  bot_controller.handle_command(event, args, :weight)
+end
+bot.command :asasore do |event, *args|
+  bot_controller.handle_command(event, args, :asasore)
+end
+bot.command :odai do |event, *args|
+  bot_controller.handle_command(event, args, :odai)
+end
 
 # ハッシュ検知時の反応
 bot.message(contains: /^(?!.*http)(?!.*<@)(?!.*<#)(?!.*<:)(?!.*<a:)(?!.*<t:)(?!.*[[.*|?.*]])(?!^AA.+A$)[!-~]{19,}$/) do |event|
@@ -71,6 +80,15 @@ end
 # Wisdom Guild
 bot.message(contains: /\[\[/) do |event|
   bot_controller.handle_message(event, :dfc)
+end
+
+# DPZ
+bot.message(from: 952298431194488942) do |event|
+  bot_controller.handle_message(event, :dpz)
+end
+
+bot.message(contains: '㌔') do |event|
+  bot_controller.handle_message(event, :weight)
 end
 
 # bot起動
