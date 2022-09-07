@@ -65,7 +65,7 @@ class FavstarService < Component
       response.value
     rescue => e
       # エラー発生時はエラー内容を白鳳にメンションする
-      event.respond "#{e.message} <@!306022413139705858>"
+      event.respond "#{e.full_message} <@!306022413139705858>"
     else
       # エラーなく投稿できたら新規発言はid登録
       @favstar_repository.add_faved_message(message_id)
