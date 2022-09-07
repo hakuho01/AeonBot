@@ -11,6 +11,7 @@ require './service/planechaser_service'
 require './service/favstar_service'
 require './service/dpz_service'
 require './service/weight_service'
+require './service/social_gacha_service'
 
 Dotenv.load
 IS_LOCAL = ENV['IS_LOCAL']
@@ -30,6 +31,7 @@ class BotController < Component
     @favstar_service = FavstarService.instance.init(bot)
     @dpz_service = DPZService.instance.init
     @weight_service = WeightService.instance.init
+    @social_gacha_service = SocialGachaService.instance.init
   end
 
   public
@@ -48,6 +50,8 @@ class BotController < Component
       @service.say_good_morning(event)
     elsif message.match?(/おやす|おやす〜|おやすー|good night/i)
       @service.say_good_night(event)
+    elsif message.match?(/プリコネ10連/)
+      @social_gacha_service.priconne_gacha(event)
     elsif message.match?(/ガチャ|10連/)
       @service.challenge_gacha(event)
     elsif message.match?('楽天')
