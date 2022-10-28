@@ -63,9 +63,9 @@ bot.command :odai do |event, *args|
 end
 
 # ハッシュ検知時の反応
-bot.message(contains: /^(?!.*http)(?!.*<@)(?!.*<#)(?!.*<:)(?!.*<a:)(?!.*<t:)(?!.*[[.*|?.*]])(?!^AA.+A$)[!-~]{19,}$/) do |event|
-  bot_controller.handle_message(event, :hash)
-end
+# bot.message(contains: /^(?!.*http)(?!.*<@)(?!.*<#)(?!.*<:)(?!.*<a:)(?!.*<t:)(?!.*[[.*|?.*]])(?!^AA.+A$)[!-~]{19,}$/) do |event|
+#   bot_controller.handle_message(event, :hash)
+# end
 
 # TwiiterのNSFWサムネイル表示
 bot.message(contains: %r{https://twitter.com/([a-zA-Z0-9_]+)/status/([0-9]+)}) do |event|
