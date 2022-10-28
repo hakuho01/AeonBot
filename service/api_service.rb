@@ -124,7 +124,7 @@ class ApiService < Component
   # TwitterNSFWサムネイル表示
   def twitter_thumbnail(event)
     # discordが展開しているか確認する
-    sleep 2
+    sleep 5
     event_msg_id = event.message.id.to_s
     event_msg_ch = event.message.channel.id.to_s
     uri = URI.parse("https://discord.com/api/channels/#{event_msg_ch}/messages/#{event_msg_id}")
@@ -134,6 +134,8 @@ class ApiService < Component
 
     # ツイート情報を取得する
     content = event.message.content
+    return if content.match(/\|\|http/) # 埋め込みがなくてもスポイラーなら展開しない
+
     twitter_urls = content.scan(%r{https://twitter.com/[a-zA-Z0-9_]+/status/[0-9]+})
 
     twitter_urls.each do |twitter_url|

@@ -13,6 +13,9 @@ describe 'BotControllerのテスト' do
     allow(BotService).to receive_message_chain(:instance, :init).and_return(service)
     allow(ApiService).to receive_message_chain(:instance, :init).and_return(service)
     allow(AsasoreService).to receive_message_chain(:instance, :init).and_return(service)
+    allow(PlaneChaserService).to receive_message_chain(:instance, :init).and_return(service)
+    allow(FavstarService).to receive_message_chain(:instance, :init).and_return(service)
+    allow(WeightService).to receive_message_chain(:instance, :init).and_return(service)
   end
 
   context 'メンションが来たとき' do
@@ -199,6 +202,29 @@ describe 'BotControllerのテスト' do
         controller = BotController.instance.init(bot)
         expect(service).to receive(:make_prof).with(args, event)
         controller.handle_command(event, args, :profile)
+      end
+    end
+
+    context 'planeコマンドの場合' do
+      it '次元カード情報を表示する' do
+        controller = BotController.instance.init(bot)
+        expect(service).to receive(:planes).with(args, event)
+        controller.handle_command(event, args, :plane)
+      end
+    end
+  end
+
+  context 'リアクションがついたとき' do
+    context '草の場合' do
+      before do
+        allow(event).to receive_message_chain(:emoji, :id).and_return(KUSA_ID.to_i)
+        allow(event).to receive_message_chain(:channel, :id).and_return(123_456)
+      end
+
+      it '草の数を記録する' do
+        controller = BotController.instance.init(bot)
+        expect(service).to receive(:memory_fav).with(event)
+        controller.reaction_control(event)
       end
     end
   end
