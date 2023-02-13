@@ -59,11 +59,95 @@ module Constants
     DETECT_HASH = 'ハッシュ値やアクセストークンの疑いがある文字列を、検出……この空間においては、許可されない……。'
     PURGE = '警告はした……あなたの罪、『黒衣の死天使』が粛清する……！'
     PURGE_TEST_MODE = '……テストモード……。命拾いしたわね……。'
-  end
-end
 
-module URLs
-  WIKIPEDIA = 'https://ja.wikipedia.org/w/api.php?format=json&action=query&generator=random&grnnamespace=0&prop=info&inprop=url&indexpageids'
-  RAKUTEN_GENRE = 'https://app.rakuten.co.jp/services/api/IchibaGenre/Search/20140222?applicationId=1081731812152273419&genreId=0'
-  RAKUTEN_RANKING = 'https://app.rakuten.co.jp/services/api/IchibaItem/Ranking/20170628?format=json&applicationId=1081731812152273419&genreId='
+    # リマインダ関連
+    ADD_REMINDER = '%sに「%s」とリマインドする。……覚えた。'
+    DENY_TOO_LONG_REMINDER = '……長すぎる。覚えられない。'
+    REMIND = '「%s」……あなたは覚えてる？'
+    DENY_NOT_SETUP_REMINDER = '今は何も覚えられないわ……研究員に相談して。'
+
+    WARN_FPS_PLAYERS = [
+      '寝なさい。',
+      '寝ることくらい、赤子だってできるのに。'
+    ]
+
+    CHOICE_RANDOM = '選ばれたのは……「%s」。'
+    TOSS_COIN = [':coin:　……表。', ':yellow_circle:　……裏。']
+
+    # ヘルプコマンド
+    HOW_TO_USE = '私は帝国の刃……皆からは『黒衣の死天使』と呼ばれている……。私にできることは、これくらいしかない……。
+    ```【コマンド】
+!ae remind [yyyy/mm/dd] [HH:MM] [内容]
+  → 指定日時に内容をリマインド #リマインダー チャンネルで使ってね。
+
+!ae roll
+
+!ae rand
+
+!ae plane [次元カードのコレクター番号]
+  → プレインチェイスの次元カードの日本語訳
+
+!ae open [URL(tweet)]
+  → discordでインライン表示されないツイートを強制展開
+
+!ae prof [テンプレート内容]
+  → テンプレート内容でプロフィール作成
+
+!ae prof_sheet
+  → 上記コマンド用のテンプレート表示
+
+【朝それ】※ #朝までそれ正解 チャンネルのみ有効
+!ae asasore [プレイ人数(半角数字)]
+  → 指定したプレイ人数で朝それ機能開始
+
+メンションで「朝それ」「お題」
+  → 朝それのお題を出題
+
+リアクション自動検知
+  → お題についたリアクションの数がプレイ人数に達したとき通知
+
+!ae odai [「○」で始まる〜なものは？]
+  → 入力したお題を死天使が代理投稿
+
+【メンション】
+「10連」「ガチャ」など
+  → リアクション10連ガチャ
+
+「楽天」など
+  → 楽天のおすすめ商品をランダム表示
+
+「wikipedia」「wiki」など
+  → wikipediaのページをランダム表示
+
+【その他】
+{{}}でMtGのカード名をくくる
+  → Wisdom Guildでの最安値表示```'
+
+  # プロフィール帳テンプレート
+  PROF_SHEET ='```名前：
+紹介者：
+誕生日：
+好きなマンガ：
+好きなアニメ：
+好きなゲーム：
+好きなソシャゲ：
+好きな食べ物：
+好きな音楽：
+ひとこと：```'
+  end
+
+  module URLs
+    WIKIPEDIA = 'https://ja.wikipedia.org/w/api.php?format=json&action=query&generator=random&grnnamespace=0&prop=info&inprop=url&indexpageids'
+    RAKUTEN_GENRE = 'https://app.rakuten.co.jp/services/api/IchibaGenre/Search/20140222?applicationId=1081731812152273419&genreId=0'
+    RAKUTEN_RANKING = 'https://app.rakuten.co.jp/services/api/IchibaItem/Ranking/20170628?format=json&applicationId=1081731812152273419&genreId='
+    BC_DICE = 'https://bcdice.onlinesession.app'
+    BC_DICE_BACKUP = 'https://bcdice.museru.com/org'
+    ASASORE = 'https://soreseikai.com/'
+    TWITTER = 'https://api.twitter.com/2/tweets/'
+    WISDOM_GUILD_URL = 'http://wonder.wisdom-guild.net/price/'
+  end
+
+  module Social_gacha
+    PRICONNE_GACHA = [[79, 97], [0, 97]].freeze
+  end
 end

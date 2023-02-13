@@ -5,4 +5,16 @@ ruby '3.0.3'
 
 gem 'discordrb'
 gem 'dotenv'
-gem 'dotenv-rails'
+gem 'mini_magick'
+gem 'nokogiri'
+gem 'simple_twitter'
+gem 'pg'
+gem 'sequel'
+
+group :development do
+  gem 'rubocop'
+end
+
+group :development, :test do
+  gem 'rspec'
+end
