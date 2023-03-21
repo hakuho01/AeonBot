@@ -14,7 +14,7 @@ Dotenv.load
 TOKEN = ENV['TOKEN']
 CLIENT_ID = ENV['CLIENT_ID'].to_i
 
-bot = Discordrb::Commands::CommandBot.new token: TOKEN, client_id: CLIENT_ID, prefix: '!ae '
+bot = Discordrb::Commands::CommandBot.new token: TOKEN, client_id: CLIENT_ID, prefix: '!ae ', discord_api_version: 9
 bot_controller = BotController.instance.init(bot)
 timer_controller = TimerController.instance.init(bot)
 
