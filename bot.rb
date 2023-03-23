@@ -6,6 +6,7 @@ require 'dotenv'
 require 'json'
 require 'time'
 
+require './config/constants'
 require './controller/bot_controller'
 require './controller/timer_controller'
 
@@ -89,6 +90,10 @@ end
 
 bot.message(contains: '㌔') do |event|
   bot_controller.handle_message(event, :weight)
+end
+
+bot.member_join do |event|
+  bot.channel(WELCOME_CHANNEL_ID).send_message("<@!#{event.user.id}>" << Constants::WELCOME_MESSAGE)
 end
 
 # bot起動
