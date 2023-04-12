@@ -96,6 +96,19 @@ module Constants
 !ae prof_sheet
   → 上記コマンド用のテンプレート表示
 
+【朝それ】※ #朝までそれ正解 チャンネルのみ有効
+!ae asasore [プレイ人数(半角数字)]
+  → 指定したプレイ人数で朝それ機能開始
+
+メンションで「朝それ」「お題」
+  → 朝それのお題を出題
+
+リアクション自動検知
+  → お題についたリアクションの数がプレイ人数に達したとき通知
+
+!ae odai [「○」で始まる〜なものは？]
+  → 入力したお題を死天使が代理投稿
+
 【メンション】
 「10連」「ガチャ」など
   → リアクション10連ガチャ
@@ -111,7 +124,8 @@ module Constants
   → Wisdom Guildでの最安値表示```'
 
   # プロフィール帳テンプレート
-  PROF_SHEET ='```名前：
+  PROF_SHEET ='```!ae prof
+名前：
 紹介者：
 誕生日：
 好きなマンガ：
@@ -123,6 +137,9 @@ module Constants
 ひとこと：```'
   end
 
+  WELCOME_MESSAGE = '、ようこそ……。私はこのサーバーで「黒衣の死天使」と呼ばれているbot。
+  まずは、`!ae prof_sheet`コマンドで出てくるテンプレートを、適当なチャンネルに投げて自己紹介してくれると、嬉しい……。'
+
   module URLs
     WIKIPEDIA = 'https://ja.wikipedia.org/w/api.php?format=json&action=query&generator=random&grnnamespace=0&prop=info&inprop=url&indexpageids'
     RAKUTEN_GENRE = 'https://app.rakuten.co.jp/services/api/IchibaGenre/Search/20140222?applicationId=1081731812152273419&genreId=0'
@@ -132,5 +149,9 @@ module Constants
     ASASORE = 'https://soreseikai.com/'
     TWITTER = 'https://api.twitter.com/2/tweets/'
     WISDOM_GUILD_URL = 'http://wonder.wisdom-guild.net/price/'
+  end
+
+  module Social_gacha
+    PRICONNE_GACHA = [[79, 97], [0, 97]].freeze
   end
 end

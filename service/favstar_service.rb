@@ -25,22 +25,32 @@ class FavstarService < Component
     message_id = event.message.id
     return if @favstar_repository.check_faved_message(message_id)[:message_id]
 
-    # 新規発言はid登録
-    @favstar_repository.add_faved_message(message_id)
-
     # API経由で投稿
     timestamp = event.message.timestamp + 32400 # 投稿のタイムスタンプに9時間加算して日本標準時に
     req_json = {
+      "components": [
+        {
+          "type": 1,
+          "components": [
+            {
+              "style": 5,
+              "label": 'View Original',
+              "url": "https://discord.com/channels/#{event.server.id}/#{event.channel.id}/#{event.message.id}",
+              "disabled": false,
+              "type": 2
+            }
+          ]
+        }
+      ],
       "embeds": [
         {
           "description": event.message.content.to_s,
           "author": {
             "name": event.message.author.display_name,
-            "url": "https://discord.com/channels/#{event.server.id}/#{event.channel.id}/#{event.message.id}",
             "icon_url": event.message.author.avatar_url
           },
           "footer": {
-            "text": timestamp.strftime('%Y/%m/%d %H:%M')
+            "text": "#{timestamp.strftime('%Y/%m/%d %H:%M')} via #{event.message.channel.name}"
           }
         }
       ]
@@ -51,7 +61,14 @@ class FavstarService < Component
     params = req_json
     headers = { 'Content-Type' => 'application/json', 'Authorization' => "Bot #{TOKEN}" }
     response = http.post(uri.path, params.to_json, headers)
-    response.code
-    response.body
+    begin
+      response.value
+    rescue => e
+      # エラー発生時はエラー内容を白鳳にメンションする
+      event.respond "#{e.message} ¥r¥n #{response.body} <@!306022413139705858>"
+    else
+      # エラーなく投稿できたら新規発言はid登録
+      @favstar_repository.add_faved_message(message_id)
+    end
   end
 end
