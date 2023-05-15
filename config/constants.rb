@@ -124,7 +124,8 @@ module Constants
   → Wisdom Guildでの最安値表示```'
 
   # プロフィール帳テンプレート
-  PROF_SHEET ='```名前：
+  PROF_SHEET ='```!ae prof
+名前：
 紹介者：
 誕生日：
 好きなマンガ：
@@ -135,6 +136,9 @@ module Constants
 好きな音楽：
 ひとこと：```'
   end
+
+  WELCOME_MESSAGE = '、ようこそ……。私はこのサーバーで「黒衣の死天使」と呼ばれているbot。
+  まずは、`!ae prof_sheet`コマンドで出てくるテンプレートを、適当なチャンネルに投げて自己紹介してくれると、嬉しい……。'
 
   module URLs
     WIKIPEDIA = 'https://ja.wikipedia.org/w/api.php?format=json&action=query&generator=random&grnnamespace=0&prop=info&inprop=url&indexpageids'

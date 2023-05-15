@@ -52,7 +52,12 @@ class ApiService < Component
     cardname = event.message.to_s.slice(/{{.*?}}/)[2..-3]
     encoded_cardname = CGI.escape(cardname)
     scryfall = ApiUtil.get("https://api.scryfall.com/cards/named?fuzzy=#{encoded_cardname}")
-    encoded_accurate_cardname = CGI.escape(scryfall['name'])
+    if scryfall['name'].include?('//')
+      scryfall_name = scryfall['name'].split('//')[0]
+    else
+      scryfall_name = scryfall['name']
+    end
+    encoded_accurate_cardname = CGI.escape(scryfall_name)
     html = URI.open(wgurl + encoded_accurate_cardname).read
     doc = Nokogiri::HTML.parse(html)
     price = doc.at_css('.wg-wonder-price-summary > .contents > big').text

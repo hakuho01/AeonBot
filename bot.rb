@@ -6,6 +6,7 @@ require 'dotenv'
 require 'json'
 require 'time'
 
+require './config/constants'
 require './controller/bot_controller'
 require './controller/timer_controller'
 
@@ -14,7 +15,7 @@ Dotenv.load
 TOKEN = ENV['TOKEN']
 CLIENT_ID = ENV['CLIENT_ID'].to_i
 
-bot = Discordrb::Commands::CommandBot.new token: TOKEN, client_id: CLIENT_ID, prefix: '!ae '
+bot = Discordrb::Commands::CommandBot.new token: TOKEN, client_id: CLIENT_ID, prefix: '!ae ', discord_api_version: 9
 bot_controller = BotController.instance.init(bot)
 timer_controller = TimerController.instance.init(bot)
 
@@ -63,9 +64,9 @@ bot.command :odai do |event, *args|
 end
 
 # ハッシュ検知時の反応
-bot.message(contains: /^(?!.*http)(?!.*<@)(?!.*<#)(?!.*<:)(?!.*<a:)(?!.*<t:)(?!.*[[.*|?.*]])(?!^AA.+A$)[!-~]{19,}$/) do |event|
-  bot_controller.handle_message(event, :hash)
-end
+# bot.message(contains: /^(?!.*http)(?!.*<@)(?!.*<#)(?!.*<:)(?!.*<a:)(?!.*<t:)(?!.*[[.*|?.*]])(?!^AA.+A$)[!-~]{19,}$/) do |event|
+#   bot_controller.handle_message(event, :hash)
+# end
 
 # TwiiterのNSFWサムネイル表示
 bot.message(contains: %r{https://twitter.com/([a-zA-Z0-9_]+)/status/([0-9]+)}) do |event|
@@ -89,6 +90,10 @@ end
 
 bot.message(contains: '㌔') do |event|
   bot_controller.handle_message(event, :weight)
+end
+
+bot.member_join do |event|
+  bot.channel(WELCOME_CHANNEL_ID).send_message("<@!#{event.user.id}>" << Constants::WELCOME_MESSAGE)
 end
 
 # bot起動
