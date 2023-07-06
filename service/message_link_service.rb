@@ -21,13 +21,9 @@ class MessageLinkService < Component
       embed.description = parsed_response['content']
       embed.colour = 0x1DA1F2
       embed.timestamp = Time.parse(parsed_response['timestamp'])
-      #embed.footer = Discordrb::Webhooks::EmbedFooter.new(
-      #  text: footer_text
-      #)
       embed.author = Discordrb::Webhooks::EmbedAuthor.new(
         name: parsed_response['author']['display_name'],
-        #url: author_url,
-        #icon_url: author_icon
+        icon_url: "https://cdn.discordapp.com/avatars/#{parsed_response['author']['id']}/#{parsed_response['author']['avatar']}.png"
       )
     end
   end
