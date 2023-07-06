@@ -12,6 +12,7 @@ require './service/favstar_service'
 require './service/dpz_service'
 require './service/weight_service'
 require './service/social_gacha_service'
+require './service/message_link_service'
 
 Dotenv.load
 IS_LOCAL = ENV['IS_LOCAL']
@@ -32,6 +33,7 @@ class BotController < Component
     @dpz_service = DPZService.instance.init
     @weight_service = WeightService.instance.init
     @social_gacha_service = SocialGachaService.instance.init
+    @message_link_service = MessageLinkService.instance.init
   end
 
   public
@@ -117,6 +119,8 @@ class BotController < Component
       @api_service.wisdom_guild(event)
     when :dfc
       @api_service.scryfall(event)
+    when :message_link
+      @message_link_service.message_link(event)
     when :dpz
       @dpz_service.open_dpz(event)
     when :weight
