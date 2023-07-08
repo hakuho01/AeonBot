@@ -11,7 +11,7 @@ class MessageLinkService < Component
     uri = URI("https://discord.com/api/v9/channels/#{channel_id}/messages/#{message_id}")
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true
-    
+
     request = Net::HTTP::Get.new(uri)
     request['Authorization'] = "Bot #{TOKEN}"
 
@@ -19,7 +19,6 @@ class MessageLinkService < Component
 
     event.send_embed do |embed|
       embed.description = parsed_response['content']
-      embed.colour = 0x1DA1F2
       embed.timestamp = Time.parse(parsed_response['timestamp'])
       embed.author = Discordrb::Webhooks::EmbedAuthor.new(
         name: parsed_response['author']['display_name'],
