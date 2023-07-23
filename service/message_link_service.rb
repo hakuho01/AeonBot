@@ -21,7 +21,7 @@ class MessageLinkService < Component
       embed.description = parsed_response['content']
       embed.timestamp = Time.parse(parsed_response['timestamp'])
       embed.author = Discordrb::Webhooks::EmbedAuthor.new(
-        name: parsed_response['author']['display_name'],
+        name: parsed_response['author']['global_name'],
         icon_url: "https://cdn.discordapp.com/avatars/#{parsed_response['author']['id']}/#{parsed_response['author']['avatar']}.png"
       )
     end
