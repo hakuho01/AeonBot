@@ -83,6 +83,11 @@ bot.message(contains: /\[\[/) do |event|
   bot_controller.handle_message(event, :dfc)
 end
 
+# メッセージリンク展開
+bot.message(contains: 'https://discord.com/channels/') do |event|
+  bot_controller.handle_message(event, :message_link)
+end
+
 # DPZ
 bot.message(from: 952298431194488942) do |event|
   bot_controller.handle_message(event, :dpz)
