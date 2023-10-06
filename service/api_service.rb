@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 require './config/constants'
 require './util/api_util'
 
@@ -142,12 +140,13 @@ class ApiService < Component
     content = event.message.content
     return if content.match(/\|\|http/) # 埋め込みがなくてもスポイラーなら展開しない
 
-    twitter_urls = content.scan(%r{https://twitter.com/[a-zA-Z0-9_]+/status/[0-9]+})
-    post_content = ""
+    twitter_urls = content.scan(%r{(https://twitter.com/[a-zA-Z0-9_]+/status/[0-9]+)|(https://x.com/([a-zA-Z0-9_]+)/status/([0-9]+))})
+    post_content = ''
 
-    twitter_urls.each do |twitter_url|
-      vx_twitter_url = twitter_url.to_s.insert(8,'vx')
-      post_content = post_content + vx_twitter_url + "\n"
+    twitter_urls.each do |item|
+      twitter_url = item.select { |e| e.to_s.match?(%r{https?://\S+})}
+      vx_twitter_url = twitter_url[0].to_s[8, 1] == 't' ? twitter_url[0].to_s.insert(8, 'vx') : twitter_url[0].to_s.sub(/x.com/, 'vxtwitter.com')
+      post_content = post_content << vx_twitter_url << "\n"
     end
     event.respond(post_content)
   end
