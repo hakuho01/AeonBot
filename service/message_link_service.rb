@@ -24,7 +24,7 @@ class MessageLinkService < Component
         name: parsed_response['author']['global_name'],
         icon_url: "https://cdn.discordapp.com/avatars/#{parsed_response['author']['id']}/#{parsed_response['author']['avatar']}.png"
       )
-      embed.image = Discordrb::Webhooks::EmbedImage.new(url: parsed_response['attachments'][0]['url']) if parsed_response['attachments']
+      embed.image = Discordrb::Webhooks::EmbedImage.new(url: parsed_response['attachments'][0]['url']) unless parsed_response['attachments'].empty?
     end
   end
 end
