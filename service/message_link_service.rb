@@ -4,7 +4,23 @@ require 'net/http'
 
 class MessageLinkService < Component
   def message_link(event)
-    message_url = event.message.content.match(%r{https://discord.com/channels/([0-9]+)/([0-9]+)/([0-9]+)})
+    pattern = %r{https://discord\.com/channels/[0-9]+/[0-9]+/[0-9a-zA-Z]+}
+    message_urls = event.message.content.scan(pattern)
+    message_urls.each do |url|
+      message = get_message(url)
+      event.send_embed do |embed|
+        embed.description = message['content']
+        embed.timestamp = Time.parse(message['timestamp'])
+        embed.author = Discordrb::Webhooks::EmbedAuthor.new(
+          name: message['author']['global_name'],
+          icon_url: "https://cdn.discordapp.com/avatars/#{message['author']['id']}/#{message['author']['avatar']}.png"
+        )
+        embed.image = Discordrb::Webhooks::EmbedImage.new(url: message['attachments'][0]['url']) unless message['attachments'].empty?
+      end
+    end
+  end
+
+  def get_message(message_url)
     a = message_url.to_s.slice!(29..-1).split('/')
     channel_id = a[1]
     message_id = a[2]
@@ -15,16 +31,6 @@ class MessageLinkService < Component
     request = Net::HTTP::Get.new(uri)
     request['Authorization'] = "Bot #{TOKEN}"
 
-    parsed_response = JSON.parse(http.request(request).body)
-
-    event.send_embed do |embed|
-      embed.description = parsed_response['content']
-      embed.timestamp = Time.parse(parsed_response['timestamp'])
-      embed.author = Discordrb::Webhooks::EmbedAuthor.new(
-        name: parsed_response['author']['global_name'],
-        icon_url: "https://cdn.discordapp.com/avatars/#{parsed_response['author']['id']}/#{parsed_response['author']['avatar']}.png"
-      )
-      embed.image = Discordrb::Webhooks::EmbedImage.new(url: parsed_response['attachments'][0]['url']) unless parsed_response['attachments'].empty?
-    end
+    return JSON.parse(http.request(request).body)
   end
 end
