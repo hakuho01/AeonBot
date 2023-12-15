@@ -1,29 +1,51 @@
 # frozen_string_literal: true
 
 require 'net/http'
+require './util/api_util'
 
 class MessageLinkService < Component
   def message_link(event)
-    message_url = event.message.content.match(%r{https://discord.com/channels/([0-9]+)/([0-9]+)/([0-9]+)})
+    pattern = %r{https://discord\.com/channels/[0-9]+/[0-9]+/[0-9a-zA-Z]+}
+    message_urls = event.message.content.scan(pattern)
+    message_urls.each do |url|
+      message = get_message(url)
+      embeds = {
+        "embeds": [
+          {
+            "url": url,
+            "description": message['content'],
+            "author": {
+              "name": message['author']['global_name'],
+              "icon_url": "https://cdn.discordapp.com/avatars/#{message['author']['id']}/#{message['author']['avatar']}.png"
+            },
+            "timestamp":  message['timestamp']
+          }
+        ]
+      }
+      message['attachments'].each do |attachment|
+        embeds[:embeds] << {
+          url: url,
+          image: {
+            url: attachment['url']
+          }
+        }
+      end
+      ApiUtil.post(
+        "https://discordapp.com/api/channels/#{event.channel.id}/messages",
+        embeds,
+        { 'Content-Type' => 'application/json', 'Authorization' => "Bot #{TOKEN}" }
+      )
+    end
+  end
+
+  def get_message(message_url)
     a = message_url.to_s.slice!(29..-1).split('/')
     channel_id = a[1]
     message_id = a[2]
-    uri = URI("https://discord.com/api/v9/channels/#{channel_id}/messages/#{message_id}")
-    http = Net::HTTP.new(uri.host, uri.port)
-    http.use_ssl = true
-
-    request = Net::HTTP::Get.new(uri)
-    request['Authorization'] = "Bot #{TOKEN}"
-
-    parsed_response = JSON.parse(http.request(request).body)
-
-    event.send_embed do |embed|
-      embed.description = parsed_response['content']
-      embed.timestamp = Time.parse(parsed_response['timestamp'])
-      embed.author = Discordrb::Webhooks::EmbedAuthor.new(
-        name: parsed_response['author']['global_name'],
-        icon_url: "https://cdn.discordapp.com/avatars/#{parsed_response['author']['id']}/#{parsed_response['author']['avatar']}.png"
-      )
-    end
+    res = ApiUtil.get(
+      "https://discord.com/api/v9/channels/#{channel_id}/messages/#{message_id}",
+      { 'Authorization' => "Bot #{TOKEN}" }
+    )
+    return res
   end
 end

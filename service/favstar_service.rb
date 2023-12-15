@@ -24,6 +24,8 @@ class FavstarService < Component
     # DBに問い合わせ、既知なら終了
     message_id = event.message.id
     return if @favstar_repository.check_faved_message(message_id)[:message_id]
+    images = event.message.attachments.find{|attachments| attachments.image?}
+    images_url = images.url if images
 
     # API経由で投稿
     timestamp = event.message.timestamp + 32400 # 投稿のタイムスタンプに9時間加算して日本標準時に
@@ -51,6 +53,9 @@ class FavstarService < Component
           },
           "footer": {
             "text": "#{timestamp.strftime('%Y/%m/%d %H:%M')} via #{event.message.channel.name}"
+          },
+          "image": {
+            "url": images_url
           }
         }
       ]
