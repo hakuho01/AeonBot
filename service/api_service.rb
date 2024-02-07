@@ -127,14 +127,14 @@ class ApiService < Component
   # TwitterNSFWサムネイル表示
   def twitter_thumbnail(event)
     # discordが展開しているか確認する
-    sleep 5 #埋め込み展開待機時間
+    sleep 2 # 埋め込み展開待機時間
     event_msg_id = event.message.id.to_s
     event_msg_ch = event.message.channel.id.to_s
 
     uri = URI.parse("https://discord.com/api/channels/#{event_msg_ch}/messages/#{event_msg_id}")
     res = Net::HTTP.get_response(uri, 'Authorization' => "Bot #{TOKEN}")
     parsed_res = JSON.parse(res.body)
-    return unless parsed_res['embeds'].empty? # discordが埋め込みやってなければ以下へ進む
+    return unless parsed_res['embeds'][0]['title'] == 'X' # discordが埋め込みやってなければ以下へ進む
 
     # ツイート情報を取得する
     content = event.message.content
