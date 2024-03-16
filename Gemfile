@@ -10,6 +10,7 @@ gem 'nokogiri'
 gem 'simple_twitter'
 gem 'pg'
 gem 'sequel'
+gem 'rss'
 
 group :development do
   gem 'rubocop'
