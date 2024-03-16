@@ -101,6 +101,14 @@ end
 #   bot.channel(WELCOME_CHANNEL_ID).send_message("<@!#{event.user.id}>" << Constants::WELCOME_MESSAGE)
 # end
 
+bot.heartbeat do
+  if $todays_date != Date.today
+    $todays_date = Date.today
+    # 日付変更時に行う処理
+    bot_controller.routine
+  end
+end
+
 # bot起動
 bot.run(true)
 

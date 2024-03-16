@@ -134,7 +134,7 @@ class ApiService < Component
     uri = URI.parse("https://discord.com/api/channels/#{event_msg_ch}/messages/#{event_msg_id}")
     res = Net::HTTP.get_response(uri, 'Authorization' => "Bot #{TOKEN}")
     parsed_res = JSON.parse(res.body)
-    return unless parsed_res['embeds'].nil? || parsed_res['embeds'][0]['title'] == 'X' # discordが埋め込みやってなければ以下へ進む
+    return unless parsed_res['embeds'].empty? || parsed_res['embeds'][0]['title'] == 'X' # discordが埋め込みやってなければ以下へ進む
 
     # ツイート情報を取得する
     content = event.message.content
