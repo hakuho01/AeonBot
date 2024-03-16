@@ -80,6 +80,8 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.12.0)
     rspec-support (3.12.0)
+    rss (0.3.0)
+      rexml
     rubocop (1.48.1)
       json (~> 2.3)
       parallel (~> 1.10)
@@ -120,6 +122,7 @@ DEPENDENCIES
   nokogiri
   pg
   rspec
+  rss
   rubocop
   sequel
   simple_twitter
