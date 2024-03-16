@@ -13,6 +13,7 @@ require './service/dpz_service'
 require './service/weight_service'
 require './service/social_gacha_service'
 require './service/message_link_service'
+require './service/routine_service'
 
 Dotenv.load
 IS_LOCAL = ENV['IS_LOCAL']
@@ -23,6 +24,7 @@ class BotController < Component
   private
 
   def construct(bot)
+    $todays_date = Date.new(1, 1, 1)
     @service = BotService.instance.init(bot)
     @asasore_service = AsasoreService.instance.init
     @api_service = ApiService.instance.init
@@ -34,9 +36,14 @@ class BotController < Component
     @weight_service = WeightService.instance.init
     @social_gacha_service = SocialGachaService.instance.init
     @message_link_service = MessageLinkService.instance.init
+    @routine_service = RoutineService.instance.init
   end
 
   public
+
+  def routine
+    @routine_service.daily_routine
+  end
 
   def reaction_control(event)
     if event.channel.id == ASASORE_CH_ID.to_i
