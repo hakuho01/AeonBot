@@ -90,10 +90,6 @@ bot.message(from: 952298431194488942) do |event|
   bot_controller.handle_message(event, :dpz)
 end
 
-bot.message(contains: '㌔') do |event|
-  bot_controller.handle_message(event, :weight)
-end
-
 # bot.member_join do |event|
 #   bot.channel(WELCOME_CHANNEL_ID).send_message("<@!#{event.user.id}>" << Constants::WELCOME_MESSAGE)
 # end

@@ -9,7 +9,7 @@ module ApiUtil
     uri = URI.parse(api_uri)
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = (uri.scheme == "https")
-  
+
     request = Net::HTTP::Get.new(uri)
     headers.each { |key, value| request[key] = value }
 
