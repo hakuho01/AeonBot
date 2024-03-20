@@ -5,6 +5,9 @@ require 'date'
 require './util/api_util'
 require './framework/component'
 
+Dotenv.load
+CUBE_CH_ID = ENV['CUBE_CH_ID']
+
 class RoutineService < Component
   def daily_routine
     # 毎日1回実行する内容
@@ -18,7 +21,7 @@ class RoutineService < Component
       next unless updated_date == Date.today
 
       ApiUtil.post(
-        'https://discordapp.com/api/channels/872712594639695880/messages',
+        "https://discordapp.com/api/channels/#{CUBE_CH_ID}/messages",
         {
           "content": "#{rss.channel.title}が更新されました"
         },
