@@ -6,6 +6,7 @@ require 'dotenv'
 require 'json'
 require 'time'
 
+require './config/constants'
 require './controller/bot_controller'
 require './controller/timer_controller'
 
@@ -14,7 +15,7 @@ Dotenv.load
 TOKEN = ENV['TOKEN']
 CLIENT_ID = ENV['CLIENT_ID'].to_i
 
-bot = Discordrb::Commands::CommandBot.new token: TOKEN, client_id: CLIENT_ID, prefix: '!ae '
+bot = Discordrb::Commands::CommandBot.new token: TOKEN, client_id: CLIENT_ID, prefix: '!ae ', discord_api_version: 9
 bot_controller = BotController.instance.init(bot)
 timer_controller = TimerController.instance.init(bot)
 
@@ -68,7 +69,7 @@ end
 # end
 
 # TwiiterのNSFWサムネイル表示
-bot.message(contains: %r{https://twitter.com/([a-zA-Z0-9_]+)/status/([0-9]+)}) do |event|
+bot.message(contains: %r{https://twitter.com/([a-zA-Z0-9_]+)/status/([0-9]+)|https://x.com/([a-zA-Z0-9_]+)/status/([0-9]+)}) do |event|
   bot_controller.handle_message(event, :thumb)
 end
 
@@ -82,6 +83,11 @@ bot.message(contains: /\[\[/) do |event|
   bot_controller.handle_message(event, :dfc)
 end
 
+# メッセージリンク展開
+bot.message(contains: 'https://discord.com/channels/') do |event|
+  bot_controller.handle_message(event, :message_link)
+end
+
 # DPZ
 bot.message(from: 952298431194488942) do |event|
   bot_controller.handle_message(event, :dpz)
@@ -89,6 +95,18 @@ end
 
 bot.message(contains: '㌔') do |event|
   bot_controller.handle_message(event, :weight)
+end
+
+# bot.member_join do |event|
+#   bot.channel(WELCOME_CHANNEL_ID).send_message("<@!#{event.user.id}>" << Constants::WELCOME_MESSAGE)
+# end
+
+bot.heartbeat do
+  if $todays_date != Date.today
+    $todays_date = Date.today
+    # 日付変更時に行う処理
+    bot_controller.routine
+  end
 end
 
 # bot起動
