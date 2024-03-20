@@ -53,9 +53,6 @@ end
 bot.command :prof_sheet do |event, *args|
   bot_controller.handle_command(event, args, :prof_sheet)
 end
-bot.command :weight do |event, *args|
-  bot_controller.handle_command(event, args, :weight)
-end
 bot.command :asasore do |event, *args|
   bot_controller.handle_command(event, args, :asasore)
 end
@@ -91,10 +88,6 @@ end
 # DPZ
 bot.message(from: 952298431194488942) do |event|
   bot_controller.handle_message(event, :dpz)
-end
-
-bot.message(contains: '㌔') do |event|
-  bot_controller.handle_message(event, :weight)
 end
 
 # bot.member_join do |event|

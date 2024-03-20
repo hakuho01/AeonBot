@@ -10,7 +10,6 @@ require './service/twitter_open_service'
 require './service/planechaser_service'
 require './service/favstar_service'
 require './service/dpz_service'
-require './service/weight_service'
 require './service/social_gacha_service'
 require './service/message_link_service'
 require './service/routine_service'
@@ -34,7 +33,6 @@ class BotController < Component
     @planechaser_service = PlaneChaserService.instance.init
     @favstar_service = FavstarService.instance.init(bot)
     @dpz_service = DPZService.instance.init
-    @weight_service = WeightService.instance.init
     @social_gacha_service = SocialGachaService.instance.init
     @message_link_service = MessageLinkService.instance.init
     @routine_service = RoutineService.instance.init
@@ -140,8 +138,6 @@ class BotController < Component
       @message_link_service.message_link(event)
     when :dpz
       @dpz_service.open_dpz(event)
-    when :weight
-      @weight_service.archive_weight(event)
     end
   rescue => e
     @error_notification_service.error_notification(e)
