@@ -100,22 +100,11 @@ class BotService < Component
       ]
     }
     response = ApiUtil.post(uri, body, header)
-    begin
-      response_sentense = response['candidates'][0]['content']['parts'][0]['text']
-    rescue e
-      ApiUtil.post(
-        "https://discordapp.com/api/channels/#{ERROR_CH_ID}/messages",
-        {
-          "content": "#{response},#{e.inspect}"
-        },
-        { 'Content-Type' => 'application/json', 'Authorization' => "Bot #{TOKEN}" }
-      )
-    end
-    #response_sentense = if response.nil?
-    #                      '……うまく話せないわ。'
-    #                    else
-    #                      response['candidates'][0]['content']['parts'][0]['text']
-    #                    end
+    response_sentense = if response['candidates'].nil?
+                          '……うまく話せないわ。'
+                        else
+                          response['candidates'][0]['content']['parts'][0]['text']
+                        end
     event.respond "<@!#{event.user.id}>" << response_sentense
   end
 
