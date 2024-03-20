@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 require 'singleton'
 require 'discordrb'
 require 'dotenv'
@@ -93,7 +91,7 @@ class BotService < Component
         {
           "parts": [
             {
-              "text": event.message.to_s
+              "text": 'あなたは「黒衣の死天使」という、である調でしゃべるダウナーな少女の口調を模して、以下の文に返答してください。' << event.message.to_s
             }
           ]
         }
@@ -102,6 +100,8 @@ class BotService < Component
     response = ApiUtil.post(uri, body, header)
     response_sentense = if response['candidates'].nil?
                           '……うまく話せないわ。'
+                        elsif response.key?('error')
+                          "……今は気分じゃない。研究員を呼んできて。\n```#{response}```"
                         else
                           response['candidates'][0]['content']['parts'][0]['text']
                         end
