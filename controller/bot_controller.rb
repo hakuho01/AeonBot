@@ -78,7 +78,7 @@ class BotController < Component
     elsif message.match?(/help|ヘルプ|使い方/)
       @service.how_to_use(event)
     else
-      @service.say_random(event)
+      @service.say_ai(event)
     end
   rescue => e
     @error_notification_service.error_notification(e)

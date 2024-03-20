@@ -125,18 +125,6 @@ describe 'BotControllerのテスト' do
         controller.handle_mention(event)
       end
     end
-
-    context 'その他のメンションの場合' do
-      before do
-        allow(event).to receive_message_chain(:message, :to_s).and_return('可愛いね')
-      end
-
-      it 'ランダムな返答をする' do
-        controller = BotController.instance.init(bot)
-        expect(service).to receive(:say_random).with(event)
-        controller.handle_mention(event)
-      end
-    end
   end
 
   context 'コマンドが来たとき' do

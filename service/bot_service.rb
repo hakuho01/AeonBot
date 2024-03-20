@@ -22,6 +22,7 @@ WELCOME_CHANNEL_ID = ENV['WELCOME_CHANNEL_ID']
 PROFILENOTE_CHANNEL_ID = ENV['PROFILENOTE_CHANNEL_ID']
 WG_API_KEY = ENV['WG_API_KEY']
 WG_S_KEY = ENV['WG_S_KEY']
+GEMINI_API_KEY = ENV['GEMINI_API_KEY']
 
 class BotService < Component
   private
@@ -82,6 +83,25 @@ class BotService < Component
 
   def say_random(event)
     event.respond "<@!#{event.user.id}>" << Constants::Speech::RESPONSE_MENTION.sample
+  end
+
+  def say_ai(event)
+    uri = Constants::URLs::GEMINI_URL + GEMINI_API_KEY
+    header = {'Content-Type': 'application/json'}
+    body = {
+      "contents": [
+        {
+          "parts": [
+            {
+              "text": event.message.to_s
+            }
+          ]
+        }
+      ]
+    }
+    response = ApiUtil.post(uri, body, header)
+    response_sentense = response['candidates'][0]['content']['parts'][0]['text']
+    event.respond "<@!#{event.user.id}>" << response_sentense
   end
 
   def judge_detected_hash(event)
