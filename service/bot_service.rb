@@ -84,6 +84,7 @@ class BotService < Component
   end
 
   def say_ai(event)
+    message_content = event.message.to_s.gsub('<@922859507917410304>', '')
     uri = Constants::URLs::GEMINI_URL + GEMINI_API_KEY
     header = {'Content-Type': 'application/json'}
     body = {
@@ -91,7 +92,7 @@ class BotService < Component
         {
           "parts": [
             {
-              "text": 'あなたは「黒衣の死天使」という、である調でしゃべるダウナーな少女の口調を模して、以下の文に返答してください。' << event.message.to_s
+              "text": 'あなたは「黒衣の死天使」という、である調でしゃべるダウナーな少女の口調を模して、以下の文に返答してください。' << message_content
             }
           ]
         }
