@@ -92,7 +92,7 @@ class BotService < Component
         {
           "parts": [
             {
-              "text": 'あなたは「黒衣の死天使」という、である調でしゃべるダウナーな少女の口調を模して、以下の文に返答してください。' << message_content
+              "text": message_content
             }
           ]
         }
