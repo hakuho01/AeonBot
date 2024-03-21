@@ -85,7 +85,6 @@ class BotService < Component
 
   def say_ai(event)
     message_content = event.message.to_s.gsub('<@922859507917410304>', '')
-    puts message_content
     uri = Constants::URLs::GEMINI_URL + GEMINI_API_KEY
     header = {'Content-Type': 'application/json'}
     body = {
