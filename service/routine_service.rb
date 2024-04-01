@@ -18,6 +18,15 @@ class RoutineService < Component
     rss_urls.each do |url|
       rss = RSS::Parser.parse(url)
       updated_date = rss.channel.item.pubDate.to_date
+
+      ApiUtil.post(
+        "https://discordapp.com/api/channels/725471441260118097/messages",
+        {
+          "content": "以下の内容でチェック：#{rss.channel.title}, #{Date.today}, #{updated_date}"
+        },
+        { 'Content-Type' => 'application/json', 'Authorization' => "Bot #{TOKEN}" }
+      )
+
       next unless updated_date == Date.today
 
       ApiUtil.post(
