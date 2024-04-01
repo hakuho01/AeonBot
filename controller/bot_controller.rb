@@ -10,10 +10,10 @@ require './service/twitter_open_service'
 require './service/planechaser_service'
 require './service/favstar_service'
 require './service/dpz_service'
-require './service/weight_service'
 require './service/social_gacha_service'
 require './service/message_link_service'
 require './service/routine_service'
+require './service/error_notification_service'
 
 Dotenv.load
 IS_LOCAL = ENV['IS_LOCAL']
@@ -33,16 +33,18 @@ class BotController < Component
     @planechaser_service = PlaneChaserService.instance.init
     @favstar_service = FavstarService.instance.init(bot)
     @dpz_service = DPZService.instance.init
-    @weight_service = WeightService.instance.init
     @social_gacha_service = SocialGachaService.instance.init
     @message_link_service = MessageLinkService.instance.init
     @routine_service = RoutineService.instance.init
+    @error_notification_service = ErrorNotificationService.instance.init
   end
 
   public
 
   def routine
     @routine_service.daily_routine
+  rescue => e
+    @error_notification_service.error_notification(e)
   end
 
   def reaction_control(event)
@@ -51,6 +53,8 @@ class BotController < Component
     elsif event.emoji.id == KUSA_ID.to_i
       @favstar_service.memory_fav(event)
     end
+  rescue => e
+    @error_notification_service.error_notification(e)
   end
 
   def handle_mention(event)
@@ -74,8 +78,10 @@ class BotController < Component
     elsif message.match?(/help|ヘルプ|使い方/)
       @service.how_to_use(event)
     else
-      @service.say_random(event)
+      @service.say_ai(event)
     end
+  rescue => e
+    @error_notification_service.error_notification(e)
   end
 
   def handle_command(event, args, command_type)
@@ -114,6 +120,8 @@ class BotController < Component
     when :odai
       @asasore_service.asasore_proxy(args, event)
     end
+  rescue => e
+    @error_notification_service.error_notification(e)
   end
 
   def handle_message(event, message_type)
@@ -130,8 +138,8 @@ class BotController < Component
       @message_link_service.message_link(event)
     when :dpz
       @dpz_service.open_dpz(event)
-    when :weight
-      @weight_service.archive_weight(event)
     end
+  rescue => e
+    @error_notification_service.error_notification(e)
   end
 end

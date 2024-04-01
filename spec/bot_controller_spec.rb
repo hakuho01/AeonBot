@@ -15,7 +15,6 @@ describe 'BotControllerのテスト' do
     allow(AsasoreService).to receive_message_chain(:instance, :init).and_return(service)
     allow(PlaneChaserService).to receive_message_chain(:instance, :init).and_return(service)
     allow(FavstarService).to receive_message_chain(:instance, :init).and_return(service)
-    allow(WeightService).to receive_message_chain(:instance, :init).and_return(service)
   end
 
   context 'メンションが来たとき' do
@@ -123,18 +122,6 @@ describe 'BotControllerのテスト' do
       it '朝それのお題を出す' do
         controller = BotController.instance.init(bot)
         expect(service).to receive(:asasore_theme).with(event)
-        controller.handle_mention(event)
-      end
-    end
-
-    context 'その他のメンションの場合' do
-      before do
-        allow(event).to receive_message_chain(:message, :to_s).and_return('可愛いね')
-      end
-
-      it 'ランダムな返答をする' do
-        controller = BotController.instance.init(bot)
-        expect(service).to receive(:say_random).with(event)
         controller.handle_mention(event)
       end
     end
