@@ -55,7 +55,8 @@ class BotController < Component
 
     if event.channel.id == ASASORE_CH_ID.to_i
       @asasore_service.asasore_check(event)
-    elsif event.emoji.id == KUSA_ID.to_i
+    end
+    if event.emoji.id == KUSA_ID.to_i
       @favstar_service.memory_fav(event)
     end
   rescue => e
