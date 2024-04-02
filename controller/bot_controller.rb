@@ -14,6 +14,7 @@ require './service/social_gacha_service'
 require './service/message_link_service'
 require './service/routine_service'
 require './service/error_notification_service'
+require './service/lootbox_service'
 
 Dotenv.load
 IS_LOCAL = ENV['IS_LOCAL']
@@ -37,6 +38,7 @@ class BotController < Component
     @message_link_service = MessageLinkService.instance.init
     @routine_service = RoutineService.instance.init
     @error_notification_service = ErrorNotificationService.instance.init
+    @lootbox_service = LootBoxService.instance.init(bot)
   end
 
   public
@@ -48,6 +50,9 @@ class BotController < Component
   end
 
   def reaction_control(event)
+    # Lootbox
+    @lootbox_service.add_reaction(event)
+
     if event.channel.id == ASASORE_CH_ID.to_i
       @asasore_service.asasore_check(event)
     elsif event.emoji.id == KUSA_ID.to_i
