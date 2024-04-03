@@ -24,4 +24,8 @@ class LootBoxRepository < Repository
   def add_user_points(user_id, additional_points)
     @db[:lb_user].where(id: user_id).update(reaction_point: Sequel[:reaction_point] + additional_points)
   end
+
+  def get_items_by_rarity(rarity)
+    @db[:lb_items].where(rarity: rarity).all
+  end
 end

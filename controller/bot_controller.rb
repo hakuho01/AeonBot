@@ -83,6 +83,8 @@ class BotController < Component
       @asasore_service.asasore_theme(event)
     elsif message.match?(/help|ヘルプ|使い方/)
       @service.how_to_use(event)
+    elsif message.match?(/ルートボックス|lootbox/)
+      @lootbox_service.lottery(event)
     else
       @service.say_ai(event)
     end
