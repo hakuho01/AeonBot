@@ -15,6 +15,7 @@ describe 'BotControllerのテスト' do
     allow(AsasoreService).to receive_message_chain(:instance, :init).and_return(service)
     allow(PlaneChaserService).to receive_message_chain(:instance, :init).and_return(service)
     allow(FavstarService).to receive_message_chain(:instance, :init).and_return(service)
+    allow(LootBoxService).to receive_message_chain(:instance, :init).and_return(service)
   end
 
   context 'メンションが来たとき' do
