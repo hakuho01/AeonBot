@@ -45,12 +45,13 @@ class LootBoxService < Component
     use_points = lottery_times * 3
 
     discord_user_id = event.message.user.id
-    user = @lootbox_repository.get_user(discord_user_id).first
 
     # ユーザーがなければ追加
     @lootbox_repository.add_user(discord_user_id) unless @lootbox_repository.get_user(discord_user_id).first
 
-    user_id = user[:id] # そうでなければユーザーID取得
+    # そうでなければユーザーID取得
+    user = @lootbox_repository.get_user(discord_user_id).first
+    user_id = user[:id]
 
     # 回す回数が不適切な場合
     unless 0 < lottery_times && lottery_times < 11
