@@ -4,7 +4,7 @@ class LootBoxRepository < Repository
 
   # lb_user
   def add_user(discord_user_id)
-    @db[:lb_user].insert(discord_id: discord_user_id, reaction_point: 0, opened_lootbox: 0)
+    @db[:lb_user].insert(discord_id: discord_user_id, reaction_point: 30, opened_lootbox: 0)
   end
 
   def get_user(discord_user_id)
