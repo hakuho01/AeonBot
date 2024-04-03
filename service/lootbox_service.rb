@@ -13,6 +13,7 @@ class LootBoxService < Component
 
   def add_reaction(event)
     return unless Time.now - event.message.timestamp <= 600
+    return if event.user.id == event.message.author.id
 
     discord_user_id = event.user.id
     discord_message_id = event.message.id
@@ -83,12 +84,12 @@ class LootBoxService < Component
       end
     end
 
-    result = ''
     if rarity_result[:c].positive?
       common_items = @lootbox_repository.get_items_by_rarity(1)
       rarity_result[:c].times do
         item = common_items.sample
-        result << item[:item_name] << ' '
+        content = "## <:lb_#{item[:id]}:#{item[:icon_id]}> #{item[:item_name]} <:lb_common:1225000300172283935>```#{item[:flavor]}```"
+        event.respond(content)
         @lootbox_repository.add_inventory(user_id, item[:id])
       end
     end
@@ -96,7 +97,8 @@ class LootBoxService < Component
       uncommon_items = @lootbox_repository.get_items_by_rarity(2)
       rarity_result[:u].times do
         item = uncommon_items.sample
-        result << item[:item_name] << ' '
+        content = "## <:lb_#{item[:id]}:#{item[:icon_id]}> #{item[:item_name]} <:lb_uncommon:1225000296950796338>```#{item[:flavor]}```"
+        event.respond(content)
         @lootbox_repository.add_inventory(user_id, item[:id])
       end
     end
@@ -104,7 +106,8 @@ class LootBoxService < Component
       rare_items = @lootbox_repository.get_items_by_rarity(3)
       rarity_result[:r].times do
         item = rare_items.sample
-        result << item[:item_name] << ' '
+        content = "## <:lb_#{item[:id]}:#{item[:icon_id]}> #{item[:item_name]} <:lb_rare:1225000298750279700>```#{item[:flavor]}```"
+        event.respond(content)
         @lootbox_repository.add_inventory(user_id, item[:id])
       end
     end
@@ -112,12 +115,11 @@ class LootBoxService < Component
       mythic_items = @lootbox_repository.get_items_by_rarity(4)
       rarity_result[:m].times do
         item = mythic_items.sample
-        result << item[:item_name] << ' '
+        content = "## <:lb_#{item[:id]}:#{item[:icon_id]}> #{item[:item_name]} <a:lb_mythic:1225000326428495982>```#{item[:flavor]}```"
+        event.respond(content)
         @lootbox_repository.add_inventory(user_id, item[:id])
       end
     end
-
-    event.respond(result)
   end
 
   def check_point(event)
