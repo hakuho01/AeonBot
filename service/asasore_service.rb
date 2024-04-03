@@ -42,6 +42,7 @@ class AsasoreService < Component
 
   # 朝それリアクションチェックメソッド
   def asasore_check(event)
+    return if event.message.embeds[0].nil?
     return if event.message.embeds[0].footer.text != @timestamp # 最新のお題かチェック
 
     rs = 0
