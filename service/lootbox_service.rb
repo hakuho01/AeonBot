@@ -42,17 +42,14 @@ class LootBoxService < Component
 
   def lottery(event)
     lottery_times = event.message.content.split(' ')[2].to_i # TODO: 整数以外が入ってきた場合
+    use_points = lottery_times * 3
 
     discord_user_id = event.message.user.id
     user = @lootbox_repository.get_user(discord_user_id).first
 
     return unless user # ユーザー未登録ならreturn
 
-    # ポイントが足りない場合
-    if user[:reaction_point] < lottery_times * 3
-      event.respond('……ポイントが足りない。')
-      return
-    end
+    user_id = user[:id] # そうでなければユーザーID取得
 
     # 回す回数が不適切な場合
     unless 0 < lottery_times && lottery_times < 11
@@ -60,6 +57,16 @@ class LootBoxService < Component
       return
     end
 
+    # ポイントが足りない場合
+    if user[:reaction_point] < use_points
+      event.respond('……ポイントが足りない。')
+      return
+    end
+
+    # ポイント支払い
+    @lootbox_repository.use_user_points(user_id, use_points)
+
+    # ガチャ回す処理
     ratio = [65, 85, 95] # TODO: CONSTANTSに移す
     rarity_result = { c: 0, u: 0, r: 0, m: 0 }
     lottery_times.times do
@@ -80,28 +87,64 @@ class LootBoxService < Component
     if rarity_result[:c].positive?
       common_items = @lootbox_repository.get_items_by_rarity(1)
       rarity_result[:c].times do
-        result << common_items.sample[:item_name] << ' '
+        item = common_items.sample
+        result << item[:item_name] << ' '
+        @lootbox_repository.add_inventory(user_id, item[:id])
       end
     end
     if rarity_result[:u].positive?
       uncommon_items = @lootbox_repository.get_items_by_rarity(2)
       rarity_result[:u].times do
-        result << uncommon_items.sample[:item_name] << ' '
+        item = uncommon_items.sample
+        result << item[:item_name] << ' '
+        @lootbox_repository.add_inventory(user_id, item[:id])
       end
     end
     if rarity_result[:r].positive?
       rare_items = @lootbox_repository.get_items_by_rarity(3)
       rarity_result[:r].times do
-        result << rare_items.sample[:item_name] << ' '
+        item = rare_items.sample
+        result << item[:item_name] << ' '
+        @lootbox_repository.add_inventory(user_id, item[:id])
       end
     end
     if rarity_result[:m].positive?
       mythic_items = @lootbox_repository.get_items_by_rarity(4)
       rarity_result[:m].times do
-        result << mythic_items.sample[:item_name] << ' '
+        item = mythic_items.sample
+        result << item[:item_name] << ' '
+        @lootbox_repository.add_inventory(user_id, item[:id])
       end
     end
 
     event.respond(result)
+  end
+
+  def check_point(event)
+    discord_user_id = event.user.id
+    user = @lootbox_repository.get_user(discord_user_id).first
+    response_sentense = if user.nil?
+                          '……あなたのデータが、見当たらない。'
+                        else
+                          "#{user[:reaction_point]}ポイントあるみたい。あと#{(user[:reaction_point] / 3).floor}回、ガチャが回せる。"
+                        end
+    event.respond(response_sentense)
+  end
+
+  def check_inventory(event)
+    discord_user_id = event.user.id
+    user = @lootbox_repository.get_user(discord_user_id).first
+    if user.nil?
+      response_sentense = '……あなたのデータが、見当たらない。'
+    else
+      inventories = @lootbox_repository.get_inventory(user[:id]).group_by(:item_id).select_group(:item_id)
+      inventory_list = ''
+      inventories.each do |n|
+        inventory = @lootbox_repository.get_items(n[:item_id]).first
+        inventory_list << inventory[:item_name] << ' '
+      end
+      response_sentense = "#{inventory_list}"
+    end
+    event.respond(response_sentense)
   end
 end
