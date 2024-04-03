@@ -47,7 +47,8 @@ class LootBoxService < Component
     discord_user_id = event.message.user.id
     user = @lootbox_repository.get_user(discord_user_id).first
 
-    return unless user # ユーザー未登録ならreturn
+    # ユーザーがなければ追加
+    @lootbox_repository.add_user(discord_user_id) unless @lootbox_repository.get_user(discord_user_id).first
 
     user_id = user[:id] # そうでなければユーザーID取得
 
