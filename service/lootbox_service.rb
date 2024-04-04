@@ -143,12 +143,12 @@ class LootBoxService < Component
       response_sentense = '……あなたのデータが、見当たらない。'
     else
       inventories = @lootbox_repository.get_inventory(user[:id]).group_by(:item_id).select_group(:item_id)
-      inventory_list = ''
+      inventory_list = '## '
       inventories.each do |n|
         inventory = @lootbox_repository.get_items(n[:item_id]).first
-        inventory_list << inventory[:item_name] << ' '
+        inventory_list << "<:lb_#{inventory[:id]}:#{inventory[:icon_id]}>"
       end
-      response_sentense = "#{inventory_list}"
+      response_sentense = inventory_list
     end
     event.respond(response_sentense)
   end
