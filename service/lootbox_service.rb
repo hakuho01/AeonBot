@@ -14,7 +14,7 @@ class LootBoxService < Component
   def add_reaction(event)
     return unless Time.now - event.message.timestamp <= 600
 
-    discord_user_id = event.user.id
+    discord_user_id = event.message.author.id
     discord_message_id = event.message.id
 
     # 新規ユーザー追加
