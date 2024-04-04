@@ -14,7 +14,7 @@ class LootBoxService < Component
   def add_reaction(event)
     return unless Time.now - event.message.timestamp <= 600
 
-    discord_user_id = event.user.id
+    discord_user_id = event.message.author.id
     discord_message_id = event.message.id
 
     # 新規ユーザー追加
@@ -85,12 +85,13 @@ class LootBoxService < Component
       end
     end
 
+    content = ''
     if rarity_result[:c].positive?
       common_items = @lootbox_repository.get_items_by_rarity(1)
       rarity_result[:c].times do
         item = common_items.sample
-        content = "## <:lb_#{item[:id]}:#{item[:icon_id]}> #{item[:item_name]} <:lb_common:1225000300172283935>```#{item[:flavor]}```"
-        event.respond(content)
+        content << "## <:lb_#{item[:id]}:#{item[:icon_id]}> #{item[:item_name]} <:lb_common:1225000300172283935>```#{item[:flavor]}```
+        "
         @lootbox_repository.add_inventory(user_id, item[:id])
       end
     end
@@ -98,8 +99,8 @@ class LootBoxService < Component
       uncommon_items = @lootbox_repository.get_items_by_rarity(2)
       rarity_result[:u].times do
         item = uncommon_items.sample
-        content = "## <:lb_#{item[:id]}:#{item[:icon_id]}> #{item[:item_name]} <:lb_uncommon:1225000296950796338>```#{item[:flavor]}```"
-        event.respond(content)
+        content << "## <:lb_#{item[:id]}:#{item[:icon_id]}> #{item[:item_name]} <:lb_uncommon:1225000296950796338>```#{item[:flavor]}```
+        "
         @lootbox_repository.add_inventory(user_id, item[:id])
       end
     end
@@ -107,8 +108,8 @@ class LootBoxService < Component
       rare_items = @lootbox_repository.get_items_by_rarity(3)
       rarity_result[:r].times do
         item = rare_items.sample
-        content = "## <:lb_#{item[:id]}:#{item[:icon_id]}> #{item[:item_name]} <:lb_rare:1225000298750279700>```#{item[:flavor]}```"
-        event.respond(content)
+        content << "## <:lb_#{item[:id]}:#{item[:icon_id]}> #{item[:item_name]} <:lb_rare:1225000298750279700>```#{item[:flavor]}```
+        "
         @lootbox_repository.add_inventory(user_id, item[:id])
       end
     end
@@ -116,38 +117,40 @@ class LootBoxService < Component
       mythic_items = @lootbox_repository.get_items_by_rarity(4)
       rarity_result[:m].times do
         item = mythic_items.sample
-        content = "## <:lb_#{item[:id]}:#{item[:icon_id]}> #{item[:item_name]} <a:lb_mythic:1225000326428495982>```#{item[:flavor]}```"
-        event.respond(content)
+        content << "## <:lb_#{item[:id]}:#{item[:icon_id]}> #{item[:item_name]} <a:lb_mythic:1225000326428495982>```#{item[:flavor]}```
+        "
         @lootbox_repository.add_inventory(user_id, item[:id])
       end
     end
+    event.respond(content)
   end
 
   def check_point(event)
     discord_user_id = event.user.id
+
+    # ユーザーがなければ追加
+    @lootbox_repository.add_user(discord_user_id) unless @lootbox_repository.get_user(discord_user_id).first
+
     user = @lootbox_repository.get_user(discord_user_id).first
-    response_sentense = if user.nil?
-                          '……あなたのデータが、見当たらない。'
-                        else
-                          "#{user[:reaction_point]}ポイントあるみたい。あと#{(user[:reaction_point] / 3).floor}回、ガチャが回せる。"
-                        end
+    response_sentense = "#{user[:reaction_point]}ポイントあるみたい。あと#{(user[:reaction_point] / 3).floor}回、ガチャが回せる。"
     event.respond(response_sentense)
   end
 
   def check_inventory(event)
     discord_user_id = event.user.id
+
+    # ユーザーがなければ追加
+    @lootbox_repository.add_user(discord_user_id) unless @lootbox_repository.get_user(discord_user_id).first
+
     user = @lootbox_repository.get_user(discord_user_id).first
-    if user.nil?
-      response_sentense = '……あなたのデータが、見当たらない。'
-    else
-      inventories = @lootbox_repository.get_inventory(user[:id]).group_by(:item_id).select_group(:item_id)
-      inventory_list = ''
-      inventories.each do |n|
-        inventory = @lootbox_repository.get_items(n[:item_id]).first
-        inventory_list << inventory[:item_name] << ' '
-      end
-      response_sentense = "#{inventory_list}"
+
+    inventories = @lootbox_repository.get_inventory(user[:id]).group_by(:item_id).select_group(:item_id)
+    inventory_list = '## '
+    inventories.each do |n|
+      inventory = @lootbox_repository.get_items(n[:item_id]).first
+      inventory_list << "<:lb_#{inventory[:id]}:#{inventory[:icon_id]}>"
     end
+    response_sentense = inventory_list
     event.respond(response_sentense)
   end
 end

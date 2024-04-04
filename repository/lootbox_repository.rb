@@ -34,7 +34,6 @@ class LootBoxRepository < Repository
 
   # lb_items
   def get_items(item_id)
-    puts item_id
     @db[:lb_items].where(id: item_id)
   end
 
