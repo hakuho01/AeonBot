@@ -41,6 +41,10 @@ class LootBoxRepository < Repository
     @db[:lb_items].where(rarity: rarity).all
   end
 
+  def get_all_items
+    @db[:lb_items]
+  end
+
   # lb_user_inventory
   def add_inventory(user_id, item_id)
     @db[:lb_user_inventory].insert(user_id: user_id, item_id: item_id, get_date: Time.now)
