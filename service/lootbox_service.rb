@@ -127,29 +127,30 @@ class LootBoxService < Component
 
   def check_point(event)
     discord_user_id = event.user.id
+
+    # ユーザーがなければ追加
+    @lootbox_repository.add_user(discord_user_id) unless @lootbox_repository.get_user(discord_user_id).first
+
     user = @lootbox_repository.get_user(discord_user_id).first
-    response_sentense = if user.nil?
-                          '……あなたのデータが、見当たらない。'
-                        else
-                          "#{user[:reaction_point]}ポイントあるみたい。あと#{(user[:reaction_point] / 3).floor}回、ガチャが回せる。"
-                        end
+    response_sentense = "#{user[:reaction_point]}ポイントあるみたい。あと#{(user[:reaction_point] / 3).floor}回、ガチャが回せる。"
     event.respond(response_sentense)
   end
 
   def check_inventory(event)
     discord_user_id = event.user.id
+
+    # ユーザーがなければ追加
+    @lootbox_repository.add_user(discord_user_id) unless @lootbox_repository.get_user(discord_user_id).first
+
     user = @lootbox_repository.get_user(discord_user_id).first
-    if user.nil?
-      response_sentense = '……あなたのデータが、見当たらない。'
-    else
-      inventories = @lootbox_repository.get_inventory(user[:id]).group_by(:item_id).select_group(:item_id)
-      inventory_list = '## '
-      inventories.each do |n|
-        inventory = @lootbox_repository.get_items(n[:item_id]).first
-        inventory_list << "<:lb_#{inventory[:id]}:#{inventory[:icon_id]}>"
-      end
-      response_sentense = inventory_list
+
+    inventories = @lootbox_repository.get_inventory(user[:id]).group_by(:item_id).select_group(:item_id)
+    inventory_list = '## '
+    inventories.each do |n|
+      inventory = @lootbox_repository.get_items(n[:item_id]).first
+      inventory_list << "<:lb_#{inventory[:id]}:#{inventory[:icon_id]}>"
     end
+    response_sentense = inventory_list
     event.respond(response_sentense)
   end
 end
