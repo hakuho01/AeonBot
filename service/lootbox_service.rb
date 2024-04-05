@@ -55,13 +55,13 @@ class LootBoxService < Component
 
     # 回す回数が不適切な場合
     unless 0 < lottery_times && lottery_times < 11
-      event.respond('ガチャを回す数を正しく指定して。')
+      event.respond('ボックスを開ける数を正しく指定して。一度に開けられるのは10箱まで。')
       return
     end
 
     # ポイントが足りない場合
     if user[:reaction_point] < use_points
-      event.respond('……ポイントが足りない。')
+      event.respond("……ポイントが足りない。あと#{user[:reaction_point] / 3}回までなら箱を開けられる。")
       return
     end
 
@@ -132,7 +132,7 @@ class LootBoxService < Component
     @lootbox_repository.add_user(discord_user_id) unless @lootbox_repository.get_user(discord_user_id).first
 
     user = @lootbox_repository.get_user(discord_user_id).first
-    response_sentense = "#{user[:reaction_point]}ポイントあるみたい。あと#{user[:reaction_point] / 3}回、ガチャが回せる。"
+    response_sentense = "#{user[:reaction_point]}ポイントあるみたい。あと#{user[:reaction_point] / 3}回、箱を開けられる。"
     event.respond(response_sentense)
   end
 
