@@ -106,7 +106,7 @@ class BotService < Component
                         else
                           response['candidates'][0]['content']['parts'][0]['text']
                         end
-    event.respond "<@!#{event.user.id}>" << response_sentense
+    event.respond "<@!#{event.user.id}>\n" << response_sentense
   end
 
   def judge_detected_hash(event)

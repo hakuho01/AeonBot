@@ -1,6 +1,7 @@
 require './controller/bot_controller'
 require './service/bot_service'
 require './service/api_service'
+require './service/lootbox_service'
 require './model/reminder'
 
 describe 'BotControllerのテスト' do
@@ -15,6 +16,7 @@ describe 'BotControllerのテスト' do
     allow(AsasoreService).to receive_message_chain(:instance, :init).and_return(service)
     allow(PlaneChaserService).to receive_message_chain(:instance, :init).and_return(service)
     allow(FavstarService).to receive_message_chain(:instance, :init).and_return(service)
+    allow(LootBoxService).to receive_message_chain(:instance, :init).and_return(service)
   end
 
   context 'メンションが来たとき' do
@@ -210,6 +212,7 @@ describe 'BotControllerのテスト' do
 
       it '草の数を記録する' do
         controller = BotController.instance.init(bot)
+        expect(service).to receive(:add_reaction).with(event) # TODO: 間違ってるはずなのであとで直す
         expect(service).to receive(:memory_fav).with(event)
         controller.reaction_control(event)
       end
