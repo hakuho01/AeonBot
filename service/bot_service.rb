@@ -99,7 +99,7 @@ class BotService < Component
       ]
     }
     response = ApiUtil.post(uri, body, header)
-    response_sentense = if response['candidates'].nil?
+    response_sentense = if response['candidates'].nil? || response['candidates'][0].nil? || response['candidates'][0]['content'].nil? || response['candidates'][0]['content']['parts'].nil? || response['candidates'][0]['content']['parts'][0].nil?
                           '……うまく話せないわ。'
                         elsif response.key?('error')
                           "……今は気分じゃない。研究員を呼んできて。\n```#{response}```"
