@@ -36,7 +36,7 @@ class BotController < Component
     @dpz_service = DPZService.instance.init
     @social_gacha_service = SocialGachaService.instance.init
     @message_link_service = MessageLinkService.instance.init
-    @routine_service = RoutineService.instance.init
+    @routine_service = RoutineService.instance.init(bot)
     @error_notification_service = ErrorNotificationService.instance.init
     @lootbox_service = LootBoxService.instance.init(bot)
   end

@@ -10,7 +10,8 @@ Dotenv.load
 CUBE_CH_ID = ENV['CUBE_CH_ID']
 
 class RoutineService < Component
-  def construct
+  def construct(bot)
+    @bot = bot
     @lootbox_repository = LootBoxRepository.instance.init
   end
 
