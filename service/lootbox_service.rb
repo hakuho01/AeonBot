@@ -183,4 +183,49 @@ class LootBoxService < Component
 
     event.respond(possession_message)
   end
+
+  def check_inventory_stats(event)
+    discord_user_id = event.user.id
+
+    # ユーザーがなければ追加
+    @lootbox_repository.add_user(discord_user_id) unless @lootbox_repository.get_user(discord_user_id).first
+
+    user = @lootbox_repository.get_user(discord_user_id).first
+
+    inventories = @lootbox_repository.get_inventory(user[:id]).all
+    grouped_inventories = inventories.group_by { |i| i[:item_id] }
+    inventory_list = []
+    grouped_inventories.each_key do |n|
+      inventory = @lootbox_repository.get_items(n).first
+      inventory_list.push({ id: inventory[:id], rarity: inventory[:rarity] })
+    end
+
+    all_items = @lootbox_repository.get_all_items.all
+
+    total_item_number = all_items.length
+    c_total_item_number = all_items.count { |item| item[:rarity] == 1 }
+    u_total_item_number = all_items.count { |item| item[:rarity] == 2 }
+    r_total_item_number = all_items.count { |item| item[:rarity] == 3 }
+    m_total_item_number = all_items.count { |item| item[:rarity] == 4 }
+
+    users_total_item_number = grouped_inventories.length
+    users_c_total_item_number = inventory_list.count { |item| item[:rarity] == 1 }
+    users_u_total_item_number = inventory_list.count { |item| item[:rarity] == 2 }
+    users_r_total_item_number = inventory_list.count { |item| item[:rarity] == 3 }
+    users_m_total_item_number = inventory_list.count { |item| item[:rarity] == 4 }
+
+    total_possession_rate = (users_total_item_number.to_f / total_item_number * 100).floor
+    c_possession_rate = (users_c_total_item_number.to_f / c_total_item_number * 100).floor
+    u_possession_rate = (users_u_total_item_number.to_f / u_total_item_number * 100).floor
+    r_possession_rate = (users_r_total_item_number.to_f / r_total_item_number * 100).floor
+    m_possession_rate = (users_m_total_item_number.to_f / m_total_item_number * 100).floor
+
+    possession_message = "総合 #{users_total_item_number}/#{total_item_number} (#{total_possession_rate}%)
+コモン #{users_c_total_item_number}/#{c_total_item_number} (#{c_possession_rate}%)
+アンコモン #{users_u_total_item_number}/#{u_total_item_number} (#{u_possession_rate}%)
+レア #{users_r_total_item_number}/#{r_total_item_number} (#{r_possession_rate}%)
+神話レア #{users_m_total_item_number}/#{m_total_item_number} (#{m_possession_rate}%)"
+
+    event.respond(possession_message)
+  end
 end
