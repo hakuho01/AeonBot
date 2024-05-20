@@ -4,11 +4,17 @@ require 'rss'
 require 'date'
 require './util/api_util'
 require './framework/component'
+require './repository/lootbox_repository'
 
 Dotenv.load
 CUBE_CH_ID = ENV['CUBE_CH_ID']
 
 class RoutineService < Component
+  def construct(bot)
+    @bot = bot
+    @lootbox_repository = LootBoxRepository.instance.init
+  end
+
   def daily_routine
     # 毎日1回実行する内容 bot再起動時は再実行されるので注意
 
@@ -38,5 +44,9 @@ class RoutineService < Component
         { 'Content-Type' => 'application/json', 'Authorization' => "Bot #{TOKEN}" }
       )
     end
+
+    # ルートボックスのメッセージ削除
+    timestamp = Time.now
+    @lootbox_repository.delete_message(timestamp)
   end
 end

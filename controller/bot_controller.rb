@@ -36,7 +36,7 @@ class BotController < Component
     @dpz_service = DPZService.instance.init
     @social_gacha_service = SocialGachaService.instance.init
     @message_link_service = MessageLinkService.instance.init
-    @routine_service = RoutineService.instance.init
+    @routine_service = RoutineService.instance.init(bot)
     @error_notification_service = ErrorNotificationService.instance.init
     @lootbox_service = LootBoxService.instance.init(bot)
   end
@@ -83,6 +83,8 @@ class BotController < Component
       @asasore_service.asasore_theme(event)
     elsif message.match?(/help|ヘルプ|使い方/)
       @service.how_to_use(event)
+    elsif message.match?(/ルートボックススタッツ|lootboxstats/)
+      @lootbox_service.check_inventory_stats(event)
     elsif message.match?(/ルートボックスインベントリ|lootboxinventory/)
       @lootbox_service.check_inventory(event)
     elsif message.match?(/ルートボックスポイント|lootboxpoint/)

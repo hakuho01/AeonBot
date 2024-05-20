@@ -21,7 +21,7 @@ class LootBoxRepository < Repository
 
   # lb_messages
   def add_message(discord_message_id, user_id)
-    @db[:lb_messages].insert(user_id: user_id, message_id: discord_message_id, reactions: 0)
+    @db[:lb_messages].insert(user_id: user_id, message_id: discord_message_id, reactions: 0, created_at: Time.now)
   end
 
   def get_message(discord_message_id)
@@ -30,6 +30,11 @@ class LootBoxRepository < Repository
 
   def update_message_reactions(discord_message_id, reactions)
     @db[:lb_messages].where(message_id: discord_message_id).update(reactions: reactions)
+  end
+
+  def delete_message(timestamp)
+    @db[:lb_messages].where(created_at: nil).delete
+    @db[:lb_messages].where { Sequel[:created_at] < (timestamp - 86400) }.delete
   end
 
   # lb_items
