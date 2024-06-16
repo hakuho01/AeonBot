@@ -29,6 +29,7 @@ class FavstarService < Component
 
     # API経由で投稿
     timestamp = event.message.timestamp + 32400 # 投稿のタイムスタンプに9時間加算して日本標準時に
+    name = event.message.author.respond_to?(:display_name) ? event.message.author.display_name : event.message.author.username
     req_json = {
       "components": [
         {
@@ -48,7 +49,7 @@ class FavstarService < Component
         {
           "description": event.message.content.to_s,
           "author": {
-            "name": event.message.author.display_name,
+            "name": name,
             "icon_url": event.message.author.avatar_url
           },
           "footer": {
