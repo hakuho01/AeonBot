@@ -125,9 +125,8 @@ class ApiService < Component
   end
 
   # TwitterNSFWサムネイル表示
-  def twitter_thumbnail(event)
+  def twitter_control(event)
     # discordが展開しているか確認する
-    sleep 2 # 埋め込み展開待機時間
     event_msg_id = event.message.id.to_s
     event_msg_ch = event.message.channel.id.to_s
 
@@ -135,20 +134,45 @@ class ApiService < Component
     res = Net::HTTP.get_response(uri, 'Authorization' => "Bot #{TOKEN}")
     parsed_res = JSON.parse(res.body)
     return if parsed_res.nil?
-    return unless parsed_res['embeds'].empty? || parsed_res['embeds'][0]['title'] == 'X' # discordが埋め込みやってなければ以下へ進む
+    if parsed_res['embeds'].empty? || parsed_res['embeds'][0]['title'] == 'X' # discordが埋め込みをやっていない場合
+      # ツイート情報を取得する
+      content = event.message.content
+      return if content.match(/\|\|http/) # 埋め込みがなくてもスポイラーなら展開しない
 
-    # ツイート情報を取得する
-    content = event.message.content
-    return if content.match(/\|\|http/) # 埋め込みがなくてもスポイラーなら展開しない
+      twitter_urls = content.scan(%r{(https://twitter.com/[a-zA-Z0-9_]+/status/[0-9]+)|(https://x.com/([a-zA-Z0-9_]+)/status/([0-9]+))})
+      post_content = ''
 
-    twitter_urls = content.scan(%r{(https://twitter.com/[a-zA-Z0-9_]+/status/[0-9]+)|(https://x.com/([a-zA-Z0-9_]+)/status/([0-9]+))})
-    post_content = ''
+      twitter_urls.each do |item|
+        twitter_url = item.select { |e| e.to_s.match?(%r{https?://\S+})}
+        vx_twitter_url = twitter_url[0].to_s[8, 1] == 't' ? twitter_url[0].to_s.insert(8, 'vx') : twitter_url[0].to_s.sub(/x.com/, 'vxtwitter.com')
+        post_content = post_content << vx_twitter_url << "\n"
+      end
+      event.respond(post_content)
+    else #埋め込みをやっている場合
+      return unless parsed_res['embeds'][0]['description'].include?('https://t\\.co')
 
-    twitter_urls.each do |item|
-      twitter_url = item.select { |e| e.to_s.match?(%r{https?://\S+})}
-      vx_twitter_url = twitter_url[0].to_s[8, 1] == 't' ? twitter_url[0].to_s.insert(8, 'vx') : twitter_url[0].to_s.sub(/x.com/, 'vxtwitter.com')
-      post_content = post_content << vx_twitter_url << "\n"
+      embed_body = parsed_res['embeds'][0]
+      embed_body['description'].gsub!('https://t\\.co', 'https://t.co/')
+
+      # API経由で投稿
+      uri = URI.parse("https://discordapp.com/api/channels/#{event_msg_ch}/messages")
+      http = Net::HTTP.new(uri.host, uri.port)
+      http.use_ssl = uri.scheme === 'https'
+      params = {
+        "content": "",
+        "tts": false,
+        "embeds": [
+          embed_body
+        ]
+      }
+      headers = { 'Content-Type' => 'application/json', 'Authorization' => "Bot #{TOKEN}" }
+      response = http.post(uri.path, params.to_json, headers)
+      begin
+        response.value
+      rescue => e
+        # エラー発生時はエラー内容を白鳳にメンションする
+        event.respond "#{e.message} ¥r¥n #{response.body} <@!306022413139705858>"
+      end
     end
-    event.respond(post_content)
   end
 end

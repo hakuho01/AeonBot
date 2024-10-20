@@ -143,7 +143,8 @@ class BotController < Component
     when :hash
       @service.judge_detected_hash(event)
     when :thumb
-      @api_service.twitter_thumbnail(event)
+      sleep 2 # 埋め込み展開待機時間
+      @api_service.twitter_control(event)
     when :wg
       @api_service.wisdom_guild(event)
     when :dfc
