@@ -91,9 +91,11 @@ class ApiService < Component
     doc = Nokogiri::HTML.parse(html)
     h1_txt = doc.at_css('h1').text
     cardname_en = h1_txt.split('/')[1]
+    return if cardname.nil?
+
     encoded_cardname_en = CGI.escape(cardname_en)
     gatherer = ApiUtil.get("https://api.magicthegathering.io/v1/cards?name=#{encoded_cardname_en}")
-    return if gatherer['cards'][0]['layout'] != 'transform' && gatherer['cards'][0]['layout'] != 'modal_dfc'
+    return if !gatherer['cards'][0].nil? && gatherer['cards'][0]['layout'] != 'transform' && gatherer['cards'][0]['layout'] != 'modal_dfc'
 
     scryfall = ApiUtil.get("https://api.scryfall.com/cards/search?q=#{encoded_cardname_en}")
     scryfall_url = scryfall['data'][0]['scryfall_uri']
@@ -133,7 +135,8 @@ class ApiService < Component
     uri = URI.parse("https://discord.com/api/channels/#{event_msg_ch}/messages/#{event_msg_id}")
     res = Net::HTTP.get_response(uri, 'Authorization' => "Bot #{TOKEN}")
     parsed_res = JSON.parse(res.body)
-    return if parsed_res.nil?
+    return if parsed_res.nil? || parsed_res['embeds'].nil?
+
     if parsed_res['embeds'].empty? || parsed_res['embeds'][0]['title'] == 'X' # discordが埋め込みをやっていない場合
       # ツイート情報を取得する
       content = event.message.content
@@ -148,8 +151,8 @@ class ApiService < Component
         post_content = post_content << vx_twitter_url << "\n"
       end
       event.respond(post_content)
-    else #埋め込みをやっている場合
-      return unless parsed_res['embeds'][0]['description'].include?('https://t\\.co')
+    else # 埋め込みをやっている場合
+      return unless !parsed_res['embeds'][0]['description'].nil? && parsed_res['embeds'][0]['description'].include?('https://t\\.co')
 
       embed_body = parsed_res['embeds'][0]
       embed_body['description'].gsub!('https://t\\.co', 'https://t.co/')

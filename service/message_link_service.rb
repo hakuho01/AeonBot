@@ -15,10 +15,10 @@ class MessageLinkService < Component
             "url": url,
             "description": message['content'],
             "author": {
-              "name": message['author']['global_name'],
+              "name": message['author']['global_name'] || message['author']['username'],
               "icon_url": "https://cdn.discordapp.com/avatars/#{message['author']['id']}/#{message['author']['avatar']}.png"
             },
-            "timestamp":  message['timestamp']
+            "timestamp": message['timestamp']
           }
         ]
       }
