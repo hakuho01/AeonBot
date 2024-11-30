@@ -162,22 +162,6 @@ class ApiService < Component
         post_content = post_content << vx_twitter_url << "\n"
       end
       event.respond(post_content)
-
-      # 元投稿の埋込削除
-      uri = URI.parse("https://discordapp.com/api/channels/#{event_msg_ch}/messages/#{event_msg_id}")
-      http = Net::HTTP.new(uri.host, uri.port)
-      http.use_ssl = uri.scheme === 'https'
-      params = {
-        "flags": 4
-      }
-      headers = { 'Content-Type' => 'application/json', 'Authorization' => "Bot #{TOKEN}" }
-      response = http.patch(uri.path, params.to_json, headers)
-      begin
-        response.value
-      rescue => e
-        # エラー発生時はエラー内容を白鳳にメンションする
-        event.respond "#{e.message} ¥r¥n #{response.body} <@!306022413139705858>"
-      end
     else # 埋め込みをやっている場合
       return unless !parsed_res['embeds'][0]['description'].nil? && parsed_res['embeds'][0]['description'].include?('https://t\\.co')
 
@@ -214,7 +198,7 @@ class ApiService < Component
       headers = { 'Content-Type' => 'application/json', 'Authorization' => "Bot #{TOKEN}" }
       response = http.patch(uri.path, params.to_json, headers)
       begin
-        response.value
+        puts response
       rescue => e
         # エラー発生時はエラー内容を白鳳にメンションする
         event.respond "#{e.message} ¥r¥n #{response.body} <@!306022413139705858>"

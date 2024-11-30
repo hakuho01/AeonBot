@@ -11,9 +11,6 @@ gem 'simple_twitter'
 gem 'pg'
 gem 'sequel'
 gem 'rss'
-gem 'csv'
-gem 'bigdecimal'
-gem 'base64'
 
 group :development do
   gem 'rubocop'
