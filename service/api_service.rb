@@ -126,23 +126,8 @@ class ApiService < Component
     end
   end
 
-  # TwitterNSFWサムネイル表示/既出管理
+  # TwitterNSFWサムネイル表示
   def twitter_control(event)
-    # ツイート情報を取得する
-    content = event.message.content
-    twitter_urls = content.scan(%r{(https://twitter.com/[a-zA-Z0-9_]+/status/[0-9]+)|(https://x.com/([a-zA-Z0-9_]+)/status/([0-9]+))})
-
-    # 既出か確認する
-    message_logs = event.channel.history(100)
-    message_logs.each do |message|
-      twitter_urls.each do |twitter_url|
-        if message.content.include?(twitter_url[1])
-          event.respond('既出かも……。', false, nil, nil, nil, event.message, nil)
-          return
-        end
-      end
-    end
-
     # discordが展開しているか確認する
     event_msg_id = event.message.id.to_s
     event_msg_ch = event.message.channel.id.to_s
@@ -153,9 +138,13 @@ class ApiService < Component
     return if parsed_res.nil? || parsed_res['embeds'].nil?
 
     if parsed_res['embeds'].empty? || parsed_res['embeds'][0]['title'] == 'X' # discordが埋め込みをやっていない場合
+      # ツイート情報を取得する
+      content = event.message.content
       return if content.match(/\|\|http/) # 埋め込みがなくてもスポイラーなら展開しない
 
+      twitter_urls = content.scan(%r{(https://twitter.com/[a-zA-Z0-9_]+/status/[0-9]+)|(https://x.com/([a-zA-Z0-9_]+)/status/([0-9]+))})
       post_content = ''
+
       twitter_urls.each do |item|
         twitter_url = item.select { |e| e.to_s.match?(%r{https?://\S+})}
         vx_twitter_url = twitter_url[0].to_s[8, 1] == 't' ? twitter_url[0].to_s.insert(8, 'vx') : twitter_url[0].to_s.sub(/x.com/, 'vxtwitter.com')
