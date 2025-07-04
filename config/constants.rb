@@ -149,7 +149,7 @@ module Constants
     ASASORE = 'https://soreseikai.com/'
     TWITTER = 'https://api.twitter.com/2/tweets/'
     WISDOM_GUILD_URL = 'http://wonder.wisdom-guild.net/price/'
-    GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key='
+    GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent'
   end
 
   module Social_gacha

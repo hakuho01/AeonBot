@@ -85,14 +85,14 @@ class BotService < Component
 
   def say_ai(event)
     message_content = event.message.to_s.gsub('<@922859507917410304>', '')
-    uri = Constants::URLs::GEMINI_URL + GEMINI_API_KEY
-    header = {'Content-Type': 'application/json'}
+    uri = Constants::URLs::GEMINI_URL
+    header = { 'Content-Type': 'application/json', 'X-goog-api-key': GEMINI_API_KEY }
     body = {
       "contents": [
         {
           "parts": [
             {
-              "text": message_content
+              "text": "あなたは「黒衣の死天使」と呼ばれている、discordのサーバーを管理する電脳人格です。冷たい口調で喋ってください。それを踏まえたうえで、以下の問いかけに答えてください。「#{message_content}」"
             }
           ]
         }
@@ -135,7 +135,7 @@ class BotService < Component
       event.user.id
     )
     @reminder_repository.add(reminder)
-    event.respond "<@!#{event.user.id}>" << Constants::Speech::ADD_REMINDER % [reminder.time.strftime('%Y年%-m月%-d日の%-H時%-M分'), message]
+    event.respond "<@!#{event.user.id}>" << format(Constants::Speech::ADD_REMINDER, reminder.time.strftime('%Y年%-m月%-d日の%-H時%-M分'), message)
   end
 
   def deny_too_long_reminder(event)
