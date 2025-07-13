@@ -25,7 +25,7 @@ class DiceRepository < Component
   def get_trpg_systems
     trpg_systems = []
     parsed_response = attempt_call_bcdice('/v2/game_system')
-    return if parsed_response.nil?
+    return if parsed_response['game_system'].nil?
 
     trpg_systems = parsed_response['game_system'].map do |system|
       system['id']
