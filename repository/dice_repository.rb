@@ -1,5 +1,7 @@
 require './util/api_util'
 
+require 'yaml'
+
 class DiceRepository < Component
   private
 
@@ -23,23 +25,22 @@ class DiceRepository < Component
   private
 
   def get_trpg_systems
-    trpg_systems = []
     parsed_response = attempt_call_bcdice('/v2/game_system')
-    puts "parsed_response: #{parsed_response}"
-    puts "game_system: #{parsed_response['game_system']}"
     return if parsed_response['game_system'].nil?
 
-    trpg_systems = parsed_response['game_system'].map do |system|
+    parsed_response['game_system'].map do |system|
       system['id']
     end
-    return trpg_systems
   end
 
   def attempt_call_bcdice(endpoint)
-    begin
-      ApiUtil.get(Constants::URLs::BC_DICE + endpoint)
-    rescue
-      ApiUtil.get(Constants::URLs::BC_DICE_BACKUP + endpoint)
+    servers = YAML.safe_load(ApiUtil.get_raw(Constants::URLs::BC_DICE_SERVERS), permitted_classes: [Symbol, Time])
+    servers.each do |server|
+      begin
+        return ApiUtil.get(server + endpoint)
+      rescue StandardError
+        next
+      end
     end
   end
 end
