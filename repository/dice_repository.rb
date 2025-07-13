@@ -38,7 +38,7 @@ class DiceRepository < Component
     servers.each do |server|
       begin
         return ApiUtil.get(server + endpoint)
-      rescue ApiError
+      rescue StandardError
         next
       end
     end
