@@ -14,7 +14,6 @@ gem 'rss'
 gem 'csv'
 gem 'bigdecimal'
 gem 'base64'
-gem 'yaml'
 
 group :development do
   gem 'rubocop'
