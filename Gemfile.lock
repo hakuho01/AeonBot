@@ -109,6 +109,7 @@ GEM
     websocket-client-simple (0.6.1)
       event_emitter
       websocket
+    yaml (0.3.0)
 
 PLATFORMS
   arm64-darwin-20
@@ -130,6 +131,7 @@ DEPENDENCIES
   rubocop
   sequel
   simple_twitter
+  yaml
 
 RUBY VERSION
    ruby 3.3.3p89
