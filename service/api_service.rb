@@ -147,7 +147,7 @@ class ApiService < Component
 
       twitter_urls.each do |item|
         twitter_url = item.select { |e| e.to_s.match?(%r{https?://\S+})}
-        vx_twitter_url = twitter_url[0].to_s[8, 1] == 't' ? twitter_url[0].to_s.insert(8, 'vx') : twitter_url[0].to_s.sub(/x.com/, 'fxtwitter.com')
+        vx_twitter_url = twitter_url[0].to_s[8, 1] == 't' ? twitter_url[0].to_s.insert(8, 'fx') : twitter_url[0].to_s.sub(/x.com/, 'fxtwitter.com')
         post_content = post_content << vx_twitter_url << "\n"
       end
       event.respond(post_content)
