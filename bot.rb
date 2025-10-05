@@ -59,6 +59,9 @@ end
 bot.command :odai do |event, *args|
   bot_controller.handle_command(event, args, :odai)
 end
+bot.command :pw do |event, *args|
+  bot_controller.handle_command(event, args, :pw)
+end
 
 # ハッシュ検知時の反応
 # bot.message(contains: /^(?!.*http)(?!.*<@)(?!.*<#)(?!.*<:)(?!.*<a:)(?!.*<t:)(?!.*[[.*|?.*]])(?!^AA.+A$)[!-~]{19,}$/) do |event|
@@ -86,7 +89,7 @@ bot.message(contains: 'https://discord.com/channels/') do |event|
 end
 
 # DPZ
-bot.message(from: 952298431194488942) do |event|
+bot.message(from: 952_298_431_194_488_942) do |event|
   bot_controller.handle_message(event, :dpz)
 end
 

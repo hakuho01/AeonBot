@@ -45,7 +45,7 @@ class BotController < Component
 
   def routine
     @routine_service.daily_routine
-  rescue => e
+  rescue StandardError => e
     @error_notification_service.error_notification(e)
   end
 
@@ -53,13 +53,9 @@ class BotController < Component
     # Lootbox
     @lootbox_service.add_reaction(event)
 
-    if event.channel.id == ASASORE_CH_ID.to_i
-      @asasore_service.asasore_check(event)
-    end
-    if event.emoji.id == KUSA_ID.to_i
-      @favstar_service.memory_fav(event)
-    end
-  rescue => e
+    @asasore_service.asasore_check(event) if event.channel.id == ASASORE_CH_ID.to_i
+    @favstar_service.memory_fav(event) if event.emoji.id == KUSA_ID.to_i
+  rescue StandardError => e
     @error_notification_service.error_notification(e)
   end
 
@@ -94,7 +90,7 @@ class BotController < Component
     else
       @service.say_ai(event)
     end
-  rescue => e
+  rescue StandardError => e
     @error_notification_service.error_notification(e)
   end
 
@@ -104,7 +100,7 @@ class BotController < Component
       date = args[0]
       time = args[1]
       message = args.slice(2..args.length - 1).join(' ')
-      if message.length <= 40  # TODO: validationはどこかに切り出したい
+      if message.length <= 40 # TODO: validationはどこかに切り出したい
         begin
           @service.add_reminder(date, time, message, event)
         rescue ReminderRepositoryNotSetUpError
@@ -133,8 +129,14 @@ class BotController < Component
       @asasore_service.asasore_start(args, event)
     when :odai
       @asasore_service.asasore_proxy(args, event)
+    when :pw
+      if args[0].to_i
+        @service.respond_pw_ability(args, event)
+      else
+        @event.respond '忠誠度の値を数値で指定してください'
+      end
     end
-  rescue => e
+  rescue StandardError => e
     @error_notification_service.error_notification(e)
   end
 
@@ -154,7 +156,7 @@ class BotController < Component
     when :dpz
       @dpz_service.open_dpz(event)
     end
-  rescue => e
+  rescue StandardError => e
     @error_notification_service.error_notification(e)
   end
 end

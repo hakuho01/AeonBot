@@ -109,6 +109,31 @@ class BotService < Component
     event.respond "<@!#{event.user.id}>\n" << response_sentense
   end
 
+  def respond_pw_ability(args, event)
+    uri = Constants::URLs::GEMINI_URL
+    header = { 'Content-Type': 'application/json', 'X-goog-api-key': GEMINI_API_KEY }
+    body = {
+      "contents": [
+        {
+          "parts": [
+            {
+              "text": "マジック・ザ・ギャザリングの5色5マナのプレインズウォーカーの忠誠度能力として妥当そうなものをひとつ提案して答えてください。なお、この能力の忠誠度の消費は#{args}点とします。回答は忠誠度能力のテキストそれのみで、「以下に5色5マナのプレインズウォーカーの能力を示します」というような能力本文以外の文章は含めないでください。"
+            }
+          ]
+        }
+      ]
+    }
+    response = ApiUtil.post(uri, body, header)
+    response_sentense = if response['candidates'].nil? || response['candidates'][0].nil? || response['candidates'][0]['content'].nil? || response['candidates'][0]['content']['parts'].nil? || response['candidates'][0]['content']['parts'][0].nil?
+                          '……うまく話せないわ。'
+                        elsif response.key?('error')
+                          "……今は気分じゃない。研究員を呼んできて。\n```#{response}```"
+                        else
+                          response['candidates'][0]['content']['parts'][0]['text']
+                        end
+    event.respond response_sentense
+  end
+
   def judge_detected_hash(event)
     event.respond Constants::Speech::DETECT_HASH
     server = @bot.server(SERVER_ID)
