@@ -8,7 +8,11 @@ require 'openssl'
 require 'cgi'
 require 'simple_twitter'
 require 'time'
+require 'dotenv'
 
+Dotenv.load
+NOTION_API_KEY = ENV['NOTION_API_KEY']
+NOTION_CHANNNEL_DESCRIPTION_ID = ENV['NOTION_CHANNNEL_DESCRIPTION_ID']
 class ApiService < Component
   # 楽天
   def rakuten(event)
@@ -209,5 +213,27 @@ class ApiService < Component
         event.respond "#{e.message} ¥r¥n #{response.body} <@!306022413139705858>"
       end
     end
+  end
+
+  def channel_description(event)
+    channel_id = event.channel.id.to_s
+    headers = {
+      'Notion-Version': '2022-06-28',
+      'Authorization': "Bearer #{NOTION_API_KEY}",
+      'Content-Type': 'application/json'
+    }
+    request_uri = "https://api.notion.com/v1/databases/#{NOTION_CHANNNEL_DESCRIPTION_ID}/query"
+    body = {
+      "filter": {
+        "property": 'channel_id',
+        "rich_text": {
+          "equals": channel_id
+        }
+      }
+    }
+    parsed_response = ApiUtil.post(request_uri, body, headers)
+    ch_name = parsed_response['results'][0]['properties']['name']['title'][0]['text']['content']
+    ch_desc = parsed_response['results'][0]['properties']['description']['rich_text'][0]['text']['content']
+    event.respond "【#{ch_name}】：#{ch_desc}"
   end
 end

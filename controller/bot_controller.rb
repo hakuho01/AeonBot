@@ -65,6 +65,8 @@ class BotController < Component
       @service.say_good_morning(event)
     elsif message.match?(/おやす|おやす〜|おやすー|good night/i)
       @service.say_good_night(event)
+    elsif message.match?(/チャンネル説明/)
+      @api_service.channel_description(event)
     elsif message.match?(/プリコネ10連/)
       @social_gacha_service.priconne_gacha(event)
     elsif message.match?(/ガチャ|10連/)
