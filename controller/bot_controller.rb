@@ -161,4 +161,11 @@ class BotController < Component
   rescue StandardError => e
     @error_notification_service.error_notification(e)
   end
+
+  def handle_channel_update(old_channel, new_channel)
+    # チャンネル名が変更された場合のみNotionを更新
+    @api_service.update_channel_name(old_channel, new_channel) if old_channel.name != new_channel.name
+  rescue StandardError => e
+    @error_notification_service.error_notification(e)
+  end
 end

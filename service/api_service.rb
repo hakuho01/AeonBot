@@ -236,4 +236,68 @@ class ApiService < Component
     ch_desc = parsed_response['results'][0]['properties']['description']['rich_text'][0]['text']['content']
     event.respond "【#{ch_name}】：#{ch_desc}"
   end
+
+  def update_channel_name(old_channel, new_channel)
+    channel_id = new_channel.id.to_s
+    new_name = new_channel.name
+
+    # NotionからチャンネルIDに該当するページを検索
+    headers = {
+      'Notion-Version': '2022-06-28',
+      'Authorization': "Bearer #{NOTION_API_KEY}",
+      'Content-Type': 'application/json'
+    }
+
+    # チャンネルIDでフィルタリング
+    query_uri = "https://api.notion.com/v1/databases/#{NOTION_CHANNNEL_DESCRIPTION_ID}/query"
+    query_body = {
+      "filter": {
+        "property": 'channel_id',
+        "rich_text": {
+          "equals": channel_id
+        }
+      }
+    }
+
+    query_response = ApiUtil.post(query_uri, query_body, headers)
+
+    # 該当するページが存在する場合のみ更新
+    return if query_response['results'].empty?
+
+    page_id = query_response['results'][0]['id']
+
+    # Notionページの名前を更新
+    update_uri = "https://api.notion.com/v1/pages/#{page_id}"
+    update_body = {
+      "properties": {
+        "name": {
+          "title": [
+            {
+              "text": {
+                "content": new_name
+              }
+            }
+          ]
+        }
+      }
+    }
+
+    uri = URI.parse(update_uri)
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = uri.scheme === 'https'
+
+    request = Net::HTTP::Patch.new(uri.request_uri)
+    request.body = update_body.to_json
+    headers.each { |key, value| request[key] = value }
+
+    response = http.request(request)
+
+    if response.code == '200'
+      puts "Notion updated: Channel #{channel_id} name changed to '#{new_name}'"
+    else
+      puts "Notion update failed: #{response.code} - #{response.body}"
+    end
+  rescue StandardError => e
+    puts "Error updating Notion: #{e.message}"
+  end
 end

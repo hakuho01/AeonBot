@@ -29,6 +29,11 @@ bot.mention do |event|
   bot_controller.handle_mention(event)
 end
 
+# チャンネル更新時の反応
+bot.channel_update do |event|
+  bot_controller.handle_channel_update(event.old_channel, event.channel)
+end
+
 bot.command :remind do |event, *args|
   bot_controller.handle_command(event, args, :remind)
 end
