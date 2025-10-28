@@ -31,7 +31,7 @@ end
 
 # チャンネル更新時の反応
 bot.channel_update do |event|
-  bot_controller.handle_channel_update(event.old_channel, event.channel)
+  bot_controller.handle_channel_update(event.channel)
 end
 
 bot.command :remind do |event, *args|

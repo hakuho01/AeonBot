@@ -237,9 +237,9 @@ class ApiService < Component
     event.respond "【#{ch_name}】：#{ch_desc}"
   end
 
-  def update_channel_name(old_channel, new_channel)
-    channel_id = new_channel.id.to_s
-    new_name = new_channel.name
+  def update_channel_name(channel)
+    channel_id = channel.id.to_s
+    new_name = channel.name
 
     # NotionからチャンネルIDに該当するページを検索
     headers = {
