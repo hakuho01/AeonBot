@@ -2,6 +2,10 @@
 
 require './framework/component'
 require './repository/reaction_repository'
+require 'dotenv'
+
+Dotenv.load
+REACTION_TARGET_SERVER_ID = ENV['SERVER_ID'].to_i
 
 class ReactionService < Component
   private
@@ -13,6 +17,9 @@ class ReactionService < Component
   public
 
   def record_reaction(event)
+    # イオン鯖のみカウント
+    return unless event.server&.id == REACTION_TARGET_SERVER_ID
+
     # カスタム絵文字かどうかを判定
     is_custom = !event.emoji.id.nil?
 
