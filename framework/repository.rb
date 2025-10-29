@@ -10,12 +10,9 @@ SCHEMA_ENV = ENV['SCHEMA_ENV']
 
 class Repository < Component
   def initialize
-    @db = Sequel.postgres(
-      DB_NAME,
-      user: DB_USER,
-      password: DB_PASS,
-      host: DB_HOST,
-      port: 5432,
+    # Heroku Postgres: DATABASE_URL を使用
+    @db = Sequel.connect(
+      ENV['DATABASE_URL'],
       sslmode: 'require',
       connect_timeout: 10
     )
