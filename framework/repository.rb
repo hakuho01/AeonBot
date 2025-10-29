@@ -10,7 +10,15 @@ SCHEMA_ENV = ENV['SCHEMA_ENV']
 
 class Repository < Component
   def initialize
-    @db = Sequel.postgres(DB_NAME, user: DB_USER, password: DB_PASS, host: DB_HOST)
+    @db = Sequel.postgres(
+      DB_NAME,
+      user: DB_USER,
+      password: DB_PASS,
+      host: DB_HOST,
+      port: 5432,
+      sslmode: 'require',
+      connect_timeout: 10
+    )
     @db.run("set search_path to #{SCHEMA_ENV}")
   end
 end
