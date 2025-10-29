@@ -18,6 +18,19 @@ class ReactionRepository < Repository
 
   # リアクションIDに該当するレコードがあれば+1、なければ新規作成
   def record_reaction(reaction_id, emoji_name, is_custom)
+    # PostgreSQLのINSERT ... ON CONFLICT を使用して、競合を回避
+    @db[:reactions].insert_conflict(
+      target: :reaction_id,
+      update: { count: Sequel[:reactions][:count] + 1 }
+    ).insert(
+      reaction_id:,
+      emoji_name:,
+      is_custom:,
+      count: 1
+    )
+  rescue Sequel::DatabaseError => e
+    # fallback: 既存の方法で再試行
+    puts "Upsert failed, using fallback method: #{e.message}"
     existing_reaction = get_reaction(reaction_id)
 
     if existing_reaction
