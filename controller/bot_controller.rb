@@ -15,6 +15,7 @@ require './service/message_link_service'
 require './service/routine_service'
 require './service/error_notification_service'
 require './service/lootbox_service'
+require './service/reaction_service'
 
 Dotenv.load
 IS_LOCAL = ENV['IS_LOCAL']
@@ -39,6 +40,7 @@ class BotController < Component
     @routine_service = RoutineService.instance.init(bot)
     @error_notification_service = ErrorNotificationService.instance.init
     @lootbox_service = LootBoxService.instance.init(bot)
+    @reaction_service = ReactionService.instance.init
   end
 
   public
@@ -50,6 +52,9 @@ class BotController < Component
   end
 
   def reaction_control(event)
+    # リアクションカウントをDBに記録
+    @reaction_service.record_reaction(event)
+
     # Lootbox
     @lootbox_service.add_reaction(event)
 
@@ -67,6 +72,9 @@ class BotController < Component
       @service.say_good_night(event)
     elsif message.match?(/チャンネル説明/)
       @api_service.channel_description(event)
+    elsif message.match?(/リアクション統計/)
+      stats = @reaction_service.get_reaction_stats
+      event.respond stats
     elsif message.match?(/プリコネ10連/)
       @social_gacha_service.priconne_gacha(event)
     elsif message.match?(/ガチャ|10連/)
