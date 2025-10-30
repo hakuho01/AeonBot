@@ -29,6 +29,11 @@ bot.mention do |event|
   bot_controller.handle_mention(event)
 end
 
+# 全メッセージを流速集計に回す
+bot.message do |event|
+  bot_controller.track_message(event)
+end
+
 # チャンネル更新時の反応
 bot.channel_update do |event|
   bot_controller.handle_channel_update(event.channel)
@@ -108,6 +113,8 @@ bot.heartbeat do
     # 日付変更時に行う処理
     bot_controller.routine
   end
+  # 要約処理の進行
+  bot_controller.heartbeat_tick
 end
 
 # bot起動
