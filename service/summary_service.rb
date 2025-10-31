@@ -65,7 +65,7 @@ class SummaryService < Component
     # 直近15分・最大50件を取得
     cutoff_time = Time.now - (15 * 60)
     # history は新しい順で返るため、必要数を多めに取得してフィルタ
-    msgs = ch.history(200)
+    msgs = ch.history(100)
       .select { |m| m.timestamp && m.timestamp >= cutoff_time }
       .reject { |m| m.author&.bot_account }
       .first(50)
