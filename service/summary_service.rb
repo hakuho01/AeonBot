@@ -107,8 +107,23 @@ class SummaryService < Component
                      '（要約を生成できませんでした）'
                    end
 
-    # 投稿先へ送信
-    posted = @bot.send_message(SUMMARY_CH_ID, "#{ch.name}が盛り上がっています！\n" + summary_text)
+    # 投稿先へ送信（2000文字制限対策）
+    header = "#{ch.name}が盛り上がっています！"
+    content = header + "\n" + summary_text.to_s
+    posted = nil
+    if content.length <= 2000
+      posted = @bot.send_message(SUMMARY_CH_ID.to_i, content)
+    else
+      # 分割送信（1900文字チャンク）
+      chunk_size = 1900
+      chunks = content.scan(/.{1,#{chunk_size}}/m)
+      chunks.each_with_index do |chunk, idx|
+        prefix = idx == 0 ? '' : "(続き)\n"
+        msg = prefix + chunk
+        posted ||= @bot.send_message(SUMMARY_CH_ID.to_i, msg)
+        @bot.send_message(SUMMARY_CH_ID.to_i, msg) if idx > 0
+      end
+    end
 
     start_ts = msgs.map(&:timestamp).compact.min
     end_ts = msgs.map(&:timestamp).compact.max
