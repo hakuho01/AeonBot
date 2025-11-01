@@ -43,14 +43,14 @@ class SummaryService < Component
     ttl_cutoff = Time.at(now_i - 15 * 60)
     @activity_repo.delete_older_than(ttl_cutoff)
 
-    # 直近15分に活動のあったチャンネルを対象に、直近10分の流速判定
+    # 直近15分に活動のあったチャンネルを対象に、直近15分の流速判定
     active_channels = @activity_repo.active_channel_ids_since(ttl_cutoff)
     active_channels.each do |ch_id|
       # クールダウン（15分）
       next if @summary_repo.summarized_recently?(ch_id, now_i, 15)
 
-      total = @activity_repo.total_count_last_minutes(ch_id, now_i, 10)
-      next unless total >= 30
+      total = @activity_repo.total_count_last_minutes(ch_id, now_i, 15)
+      next unless total >= 15
 
       summarize_and_post(ch_id)
     end
@@ -84,7 +84,7 @@ class SummaryService < Component
     return if lines.empty?
 
     prompt = <<~TXT
-    あなたはDiscordの議事メモ係です。以下は直近15分の会話ログです。重要な論点・合意・未解決事項・アクションを簡潔に日本語で要約してください。挨拶・スタンプは省略。箇条書き推奨。150文字以内。
+    以下はDiscordの直近15分の会話ログです。話の流れがわかるように、平易な文章で要約してください。挨拶やスタンプのみの投稿は省略して構いません。150文字以内で自然な日本語でまとめてください。
     ---
     #{lines.join("\n")}
     TXT
@@ -108,7 +108,7 @@ class SummaryService < Component
                    end
 
     # 投稿先へ送信（2000文字制限対策）
-    header = "#{ch.name}が盛り上がっています！"
+    header = "<##{ch.id}>が盛り上がっています！"
     content = header + "\n" + summary_text.to_s
     posted = nil
     if content.length <= 2000
