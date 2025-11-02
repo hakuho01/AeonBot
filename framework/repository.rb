@@ -14,10 +14,7 @@ class Repository < Component
     @db = Sequel.connect(
       ENV['DATABASE_URL'],
       sslmode: 'require',
-      connect_timeout: 10,
-      after_connect: proc { |conn|
-        conn.exec("SET search_path TO #{SCHEMA_ENV}")
-      }
+      connect_timeout: 10
     )
     @db.run("set search_path to #{SCHEMA_ENV}")
   end

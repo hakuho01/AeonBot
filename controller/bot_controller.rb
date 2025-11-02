@@ -16,7 +16,6 @@ require './service/routine_service'
 require './service/error_notification_service'
 require './service/lootbox_service'
 require './service/reaction_service'
-require './service/summary_service'
 
 Dotenv.load
 IS_LOCAL = ENV['IS_LOCAL']
@@ -42,7 +41,6 @@ class BotController < Component
     @error_notification_service = ErrorNotificationService.instance.init
     @lootbox_service = LootBoxService.instance.init(bot)
     @reaction_service = ReactionService.instance.init
-    @summary_service = SummaryService.instance.init(bot)
   end
 
   public
@@ -62,13 +60,6 @@ class BotController < Component
 
     @asasore_service.asasore_check(event) if event.channel.id == ASASORE_CH_ID.to_i
     @favstar_service.memory_fav(event) if event.emoji.id == KUSA_ID.to_i
-  rescue StandardError => e
-    @error_notification_service.error_notification(e)
-  end
-
-  # 全メッセージの記録用（流速判定）
-  def track_message(event)
-    @summary_service.record_activity(event)
   rescue StandardError => e
     @error_notification_service.error_notification(e)
   end
@@ -182,13 +173,6 @@ class BotController < Component
   def handle_channel_update(channel)
     # チャンネル更新時にNotionのチャンネル名を上書き
     @api_service.update_channel_name(channel)
-  rescue StandardError => e
-    @error_notification_service.error_notification(e)
-  end
-
-  # 心拍ごとに要約処理を進める
-  def heartbeat_tick
-    @summary_service.process
   rescue StandardError => e
     @error_notification_service.error_notification(e)
   end
