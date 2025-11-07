@@ -300,4 +300,78 @@ class ApiService < Component
   rescue StandardError => e
     puts "Error updating Notion: #{e.message}"
   end
+
+  def create_channel_in_notion(channel)
+    channel_id = channel.id.to_s
+    channel_name = channel.name
+
+    headers = {
+      'Notion-Version': '2022-06-28',
+      'Authorization': "Bearer #{NOTION_API_KEY}",
+      'Content-Type': 'application/json'
+    }
+
+    # 既に存在するかチェック
+    query_uri = "https://api.notion.com/v1/databases/#{NOTION_CHANNNEL_DESCRIPTION_ID}/query"
+    query_body = {
+      "filter": {
+        "property": 'channel_id',
+        "rich_text": {
+          "equals": channel_id
+        }
+      }
+    }
+
+    query_response = ApiUtil.post(query_uri, query_body, headers)
+    return unless query_response['results'].empty? # 既に存在する場合はスキップ
+
+    # 新しいページを作成
+    create_uri = "https://api.notion.com/v1/pages"
+    create_body = {
+      "parent": {
+        "database_id": NOTION_CHANNNEL_DESCRIPTION_ID
+      },
+      "properties": {
+        "channel_id": {
+          "rich_text": [
+            {
+              "text": {
+                "content": channel_id
+              }
+            }
+          ]
+        },
+        "name": {
+          "title": [
+            {
+              "text": {
+                "content": channel_name
+              }
+            }
+          ]
+        },
+        "description": {
+          "rich_text": []
+        }
+      }
+    }
+
+    uri = URI.parse(create_uri)
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = uri.scheme === 'https'
+
+    request = Net::HTTP::Post.new(uri.request_uri)
+    request.body = create_body.to_json
+    headers.each { |key, value| request[key] = value }
+
+    response = http.request(request)
+
+    if response.code == '200'
+      puts "Notion created: Channel #{channel_id} (#{channel_name}) added to Notion"
+    else
+      puts "Notion create failed: #{response.code} - #{response.body}"
+    end
+  rescue StandardError => e
+    puts "Error creating channel in Notion: #{e.message}"
+  end
 end

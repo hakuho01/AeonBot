@@ -34,6 +34,11 @@ bot.channel_update do |event|
   bot_controller.handle_channel_update(event.channel)
 end
 
+# チャンネル作成時の反応
+bot.channel_create do |event|
+  bot_controller.handle_channel_create(event.channel)
+end
+
 bot.command :remind do |event, *args|
   bot_controller.handle_command(event, args, :remind)
 end

@@ -176,4 +176,11 @@ class BotController < Component
   rescue StandardError => e
     @error_notification_service.error_notification(e)
   end
+
+  def handle_channel_create(channel)
+    # チャンネル作成時にNotionに追加
+    @api_service.create_channel_in_notion(channel)
+  rescue StandardError => e
+    @error_notification_service.error_notification(e)
+  end
 end
