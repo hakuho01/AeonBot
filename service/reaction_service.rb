@@ -10,7 +10,8 @@ REACTION_TARGET_SERVER_ID = ENV['SERVER_ID'].to_i
 class ReactionService < Component
   private
 
-  def construct
+  def construct(bot = nil)
+    @bot = bot
     @reaction_repository = ReactionRepository.instance.init
   end
 
@@ -58,6 +59,75 @@ class ReactionService < Component
     stats_message
   rescue StandardError => e
     puts "Error getting reaction stats: #{e.message}"
+    '統計の取得中にエラーが発生しました。'
+  end
+
+  def get_all_reaction_stats(server_id)
+    return 'サーバー情報が取得できません。' if @bot.nil?
+
+    server = @bot.server(server_id)
+    return 'サーバーが見つかりません。' if server.nil?
+
+    # DBから全リアクションを取得
+    all_reactions = @reaction_repository.get_all_reactions
+    reaction_map = {}
+    all_reactions.each do |reaction|
+      reaction_map[reaction[:reaction_id]] = reaction
+    end
+
+    # サーバーのカスタム絵文字を取得
+    custom_emojis = server.emoji.to_a.map { |_k, emoji| emoji }
+
+    # カスタム絵文字も含めたランキングを作成
+    all_rankings = []
+
+    # 通常絵文字（DBにあるもの）
+    all_reactions.each do |reaction|
+      next if reaction[:is_custom] # カスタム絵文字は後で処理
+
+      all_rankings << {
+        reaction_id: reaction[:reaction_id],
+        emoji_name: reaction[:emoji_name],
+        is_custom: false,
+        count: reaction[:count]
+      }
+    end
+
+    # カスタム絵文字（サーバーにあるものすべて、0件でも含める）
+    custom_emojis.each do |emoji|
+      reaction_id_str = emoji.id.to_s
+      db_reaction = reaction_map[reaction_id_str]
+
+      all_rankings << {
+        reaction_id: reaction_id_str,
+        emoji_name: emoji.name,
+        is_custom: true,
+        count: db_reaction ? db_reaction[:count] : 0
+      }
+    end
+
+    # カウント順にソート
+    all_rankings.sort_by! { |r| -r[:count] }
+
+    return 'まだリアクションのデータがありません。' if all_rankings.empty?
+
+    # 統計メッセージを作成
+    stats_message = "**リアクション統計（全件）**\n\n"
+
+    all_rankings.each_with_index do |reaction, index|
+      # カスタム絵文字の場合は <:name:id> 形式、通常絵文字の場合はそのまま表示
+      emoji_display = if reaction[:is_custom]
+                        "<:#{reaction[:emoji_name]}:#{reaction[:reaction_id]}>"
+                      else
+                        reaction[:emoji_name]
+                      end
+
+      stats_message += "#{index + 1}. #{emoji_display}：#{reaction[:count]}回\n"
+    end
+
+    stats_message
+  rescue StandardError => e
+    puts "Error getting all reaction stats: #{e.message}"
     '統計の取得中にエラーが発生しました。'
   end
 end

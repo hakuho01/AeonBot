@@ -44,4 +44,15 @@ class ReactionRepository < Repository
   def get_top_reactions(limit = 10)
     @db[:reactions].order(Sequel.desc(:count)).limit(limit).all
   end
+
+  # 全リアクションを使用回数の多い順に取得
+  def get_all_reactions
+    @db[:reactions].order(Sequel.desc(:count)).all
+  end
+
+  # リアクションIDでカウントを取得（存在しない場合は0）
+  def get_count(reaction_id)
+    reaction = get_reaction(reaction_id)
+    reaction ? reaction[:count] : 0
+  end
 end

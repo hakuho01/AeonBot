@@ -72,6 +72,9 @@ end
 bot.command :pw do |event, *args|
   bot_controller.handle_command(event, args, :pw)
 end
+bot.command :reaction_all do |event, *args|
+  bot_controller.handle_command(event, args, :reaction_all)
+end
 
 # ハッシュ検知時の反応
 # bot.message(contains: /^(?!.*http)(?!.*<@)(?!.*<#)(?!.*<:)(?!.*<a:)(?!.*<t:)(?!.*[[.*|?.*]])(?!^AA.+A$)[!-~]{19,}$/) do |event|

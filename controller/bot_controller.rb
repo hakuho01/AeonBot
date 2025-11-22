@@ -40,7 +40,7 @@ class BotController < Component
     @routine_service = RoutineService.instance.init(bot)
     @error_notification_service = ErrorNotificationService.instance.init
     @lootbox_service = LootBoxService.instance.init(bot)
-    @reaction_service = ReactionService.instance.init
+    @reaction_service = ReactionService.instance.init(bot)
   end
 
   public
@@ -144,6 +144,14 @@ class BotController < Component
         @service.respond_pw_ability(args, event)
       else
         @event.respond '忠誠度の値を数値で指定してください'
+      end
+    when :reaction_all
+      server_id = event.server&.id
+      if server_id
+        stats = @reaction_service.get_all_reaction_stats(server_id)
+        event.respond stats
+      else
+        event.respond 'サーバー情報が取得できません。'
       end
     end
   rescue StandardError => e
