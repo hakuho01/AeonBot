@@ -148,8 +148,10 @@ class BotController < Component
     when :reaction_all
       server_id = event.server&.id
       if server_id
-        stats = @reaction_service.get_all_reaction_stats(server_id)
-        event.respond stats
+        stats_messages = @reaction_service.get_all_reaction_stats(server_id)
+        stats_messages.each do |msg|
+          event.respond msg
+        end
       else
         event.respond 'サーバー情報が取得できません。'
       end

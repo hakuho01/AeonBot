@@ -109,10 +109,12 @@ class ReactionService < Component
     # カウント順にソート
     all_rankings.sort_by! { |r| -r[:count] }
 
-    return 'まだリアクションのデータがありません。' if all_rankings.empty?
+    return ['まだリアクションのデータがありません。'] if all_rankings.empty?
 
-    # 統計メッセージを作成
-    stats_message = "**リアクション統計（全件）**\n\n"
+    # 統計メッセージを分割して作成（2000文字制限対策）
+    messages = []
+    current_message = "**リアクション統計（全件）**\n\n"
+    max_length = 1900 # 安全マージン
 
     all_rankings.each_with_index do |reaction, index|
       # カスタム絵文字の場合は <:name:id> 形式、通常絵文字の場合はそのまま表示
@@ -122,12 +124,23 @@ class ReactionService < Component
                         reaction[:emoji_name]
                       end
 
-      stats_message += "#{index + 1}. #{emoji_display}：#{reaction[:count]}回\n"
+      line = "#{index + 1}. #{emoji_display}：#{reaction[:count]}回\n"
+
+      # メッセージが長くなりすぎる場合は分割
+      if (current_message.length + line.length) > max_length
+        messages << current_message
+        current_message = "(続き)\n\n"
+      end
+
+      current_message += line
     end
 
-    stats_message
+    # 最後のメッセージを追加
+    messages << current_message unless current_message.empty?
+
+    messages
   rescue StandardError => e
     puts "Error getting all reaction stats: #{e.message}"
-    '統計の取得中にエラーが発生しました。'
+    ['統計の取得中にエラーが発生しました。']
   end
 end
