@@ -33,6 +33,11 @@ class ReactionService < Component
 
     # DBに記録
     @reaction_repository.record_reaction(reaction_id_str, emoji_name, is_custom)
+
+    if reaction_id == KUSA_ID
+      kusa_count = @reaction_repository.get_count(reaction_id)
+      event.respond "<@!#{event.user.id}> あなたが、数え始めてから100,000本目の草をつけたのね。" if kusa_count == 100_000
+    end
   rescue StandardError => e
     puts "Error recording reaction: #{e.message}"
   end
