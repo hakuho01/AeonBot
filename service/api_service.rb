@@ -139,10 +139,10 @@ class ApiService < Component
     return if parsed_res.nil? || parsed_res['embeds'].nil?
 
     content = event.message.content
-    return unless TwitterOpenService.instance.init.expandable_tweet_urls?(content)
+    return unless TwitterOpenService.instance.expandable_tweet_urls?(content)
 
     if broken_twitter_embed?(parsed_res)
-      TwitterOpenService.instance.init.open_tweets_from_content(event, content)
+      TwitterOpenService.instance.open_tweets_from_content(event, content)
       suppress_message_embeds(event_msg_ch, event_msg_id, existing_flags: parsed_res['flags'].to_i)
     elsif t_co_link_broken?(parsed_res)
       repost_fixed_t_co_embed(parsed_res, event_msg_ch, event_msg_id, event)

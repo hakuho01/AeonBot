@@ -7,11 +7,12 @@ require 'uri'
 require 'time'
 
 class TwitterBrowserService < Component
-  USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 ' \
+  USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 ' \
                '(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
   PAGE_WAIT_SECONDS = 3
   SESSION_PATH = File.expand_path('../.twitter_session.json', __dir__)
   HOME_URL = 'https://x.com/home'
+  ORIGIN_URL = 'https://x.com'
 
   def construct
     @mutex = Mutex.new
@@ -21,41 +22,54 @@ class TwitterBrowserService < Component
 
   def fetch_tweet(tweet_url)
     @mutex.synchronize do
-      ensure_browser
-      apply_cookies unless @cookies_applied
-
-      @browser.goto(tweet_url)
-      sleep PAGE_WAIT_SECONDS
-      refresh_ct0_from_browser
-      parse_tweet_page(tweet_url)
+      with_browser_retry { load_tweet(tweet_url) }
     end
-  rescue StandardError
-    reset_browser
-    raise
   end
 
   def shutdown
-    @mutex.synchronize do
-      @browser&.quit
-      @browser = nil
-      @cookies_applied = false
-    end
+    @mutex.synchronize { reset_browser }
   end
 
   private
+
+  def load_tweet(tweet_url)
+    ensure_browser
+    apply_cookies unless @cookies_applied
+
+    @browser.goto(tweet_url)
+    sleep PAGE_WAIT_SECONDS
+    refresh_ct0_from_browser
+    parse_tweet_page(tweet_url)
+  end
+
+  def with_browser_retry
+    yield
+  rescue StandardError => e
+    warn "Twitter browser error, retrying once: #{e.class}: #{e.message}"
+    reset_browser
+    begin
+      yield
+    rescue StandardError
+      reset_browser
+      raise
+    end
+  end
 
   def ensure_browser
     return if @browser
 
     options = {
-      headless: 'new',
-      timeout: 30,
-      process_timeout: 60,
+      headless: true,
+      timeout: 60,
+      process_timeout: 90,
+      pending_connection_errors: false,
       browser_options: {
         'no-sandbox': nil,
         'disable-dev-shm-usage': nil,
         'disable-gpu': nil,
-        'single-process': nil,
+        'disable-software-rasterizer': nil,
+        'mute-audio': nil,
+        'window-size': '1280,720',
         'user-agent': USER_AGENT
       }
     }
@@ -64,6 +78,8 @@ class TwitterBrowserService < Component
     options[:browser_path] = browser_path if browser_path
 
     @browser = Ferrum::Browser.new(**options)
+    # 起動直後にターゲットを作り、以降の cookies / goto を安定させる
+    @browser.goto('about:blank')
   end
 
   def resolve_browser_path
@@ -87,22 +103,40 @@ class TwitterBrowserService < Component
   end
 
   def apply_cookies
+    ensure_browser
+
     auth_token = present(ENV['TWITTER_AUTH_TOKEN'])
-    return unless auth_token
+    unless auth_token
+      @cookies_applied = true
+      return
+    end
 
     ct0 = load_ct0
 
-    %w[.x.com .twitter.com].each do |domain|
-      @browser.cookies.set(name: 'auth_token', value: auth_token, domain: domain, path: '/')
-      @browser.cookies.set(name: 'ct0', value: ct0, domain: domain, path: '/') if ct0
-    end
+    # 先に x.com を開いてから CDP で Cookie を流し込む
+    @browser.goto(ORIGIN_URL)
+    sleep 1
+    set_x_cookie('auth_token', auth_token, http_only: true)
+    set_x_cookie('ct0', ct0, http_only: false) if ct0
 
-    # ct0 が無い／古い場合でも、ホームを開いてサーバー側に再発行させる
     @browser.goto(HOME_URL)
     sleep PAGE_WAIT_SECONDS
     refresh_ct0_from_browser
 
     @cookies_applied = true
+  end
+
+  def set_x_cookie(name, value, http_only:)
+    @browser.page.command(
+      'Network.setCookie',
+      name: name,
+      value: value,
+      domain: '.x.com',
+      path: '/',
+      secure: true,
+      httpOnly: http_only,
+      sameSite: 'None'
+    )
   end
 
   def load_ct0
@@ -117,6 +151,8 @@ class TwitterBrowserService < Component
 
     ENV['TWITTER_CT0'] = new_ct0
     write_session('ct0' => new_ct0)
+  rescue StandardError => e
+    warn "ct0 refresh skipped: #{e.class}: #{e.message}"
   end
 
   def read_session
@@ -131,6 +167,8 @@ class TwitterBrowserService < Component
     session = read_session.merge(attrs)
     session['updated_at'] = Time.now.iso8601
     File.write(SESSION_PATH, JSON.pretty_generate(session))
+  rescue StandardError => e
+    warn "twitter session write skipped: #{e.class}: #{e.message}"
   end
 
   def present(value)
@@ -140,6 +178,9 @@ class TwitterBrowserService < Component
 
   def reset_browser
     @browser&.quit
+  rescue StandardError
+    nil
+  ensure
     @browser = nil
     @cookies_applied = false
   end
@@ -218,7 +259,6 @@ class TwitterBrowserService < Component
       ''
   end
 
-  # "Name on X: \"本文\" / X" または「XユーザーのNameさん: 「本文」 / X」から本文を取り出す
   def text_from_title(title)
     return nil if title.to_s.empty?
 

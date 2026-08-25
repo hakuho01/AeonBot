@@ -34,13 +34,43 @@ class TwitterOpenService < Component
   end
 
   def open_tweet(event, tweet_url)
-    tweet = @browser_service.fetch_tweet(tweet_url)
-    send_tweet_embed(event, tweet)
+    tweet = fetch_tweet_data(tweet_url)
+    send_tweet_embed(event, tweet) if tweet
   rescue TweetNotFoundError
     nil
   end
 
   private
+
+  def fetch_tweet_data(tweet_url)
+    @browser_service.fetch_tweet(tweet_url)
+  rescue StandardError => e
+    warn "browser tweet fetch failed, falling back to fxtwitter: #{e.class}: #{e.message}"
+    fetch_tweet_via_fxtwitter(tweet_url)
+  end
+
+  def fetch_tweet_via_fxtwitter(tweet_url)
+    username, tweet_id = tweet_url.match(TWEET_URL_PATTERN)&.captures
+    raise TweetNotFoundError, tweet_url unless tweet_id
+
+    path = username ? "#{username}/status/#{tweet_id}" : "status/#{tweet_id}"
+    response = ApiUtil.get("https://api.fxtwitter.com/#{path}")
+    tweet = response['tweet']
+    raise TweetNotFoundError, tweet_url if tweet.nil? || response['code'] != 200
+
+    author = tweet['author'] || {}
+    photos = tweet.dig('media', 'photos') || []
+    images = photos.filter_map { |photo| photo['url'] || photo['image'] }
+
+    {
+      text: tweet['text'].to_s,
+      author_name: author['name'],
+      author_handle: author['screen_name'] ? "@#{author['screen_name']}" : nil,
+      author_icon: author['avatar_url'],
+      tweet_url: tweet_url,
+      images: images
+    }
+  end
 
   def send_tweet_embed(event, tweet)
     author_url = if tweet[:author_handle]

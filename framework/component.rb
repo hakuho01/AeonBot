@@ -7,7 +7,7 @@ class Component include Singleton
 
   def init(*args)
     unless @initilized
-      @initialize = true
+      @initilized = true
       construct(*args)
     end
     return self
