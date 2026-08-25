@@ -324,4 +324,4 @@ class TwitterBrowserService < Component
   end
 end
 
-class TweetNotFoundError < StandardError; end
+class TweetNotFoundError < StandardError; end unless defined?(TweetNotFoundError)

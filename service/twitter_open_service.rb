@@ -3,6 +3,8 @@
 require './framework/component'
 require './util/api_util'
 
+class TweetNotFoundError < StandardError; end
+
 class TwitterOpenService < Component
   TWEET_URL_PATTERN = %r{https://(?:twitter\.com|x\.com)/([a-zA-Z0-9_]+)/status/([0-9]+)}
   SPOILER_PATTERN = /\|\|.+?\|\|/m
