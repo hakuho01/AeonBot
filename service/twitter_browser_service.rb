@@ -48,18 +48,42 @@ class TwitterBrowserService < Component
     return if @browser
 
     options = {
-      headless: true,
+      headless: 'new',
       timeout: 30,
+      process_timeout: 60,
       browser_options: {
         'no-sandbox': nil,
         'disable-dev-shm-usage': nil,
         'disable-gpu': nil,
+        'single-process': nil,
         'user-agent': USER_AGENT
       }
     }
-    options[:browser_path] = ENV['CHROME_PATH'] if ENV['CHROME_PATH']
+
+    browser_path = resolve_browser_path
+    options[:browser_path] = browser_path if browser_path
 
     @browser = Ferrum::Browser.new(**options)
+  end
+
+  def resolve_browser_path
+    [
+      ENV['CHROME_PATH'],
+      ENV['BROWSER_PATH'],
+      ENV['GOOGLE_CHROME_BIN'],
+      ENV['GOOGLE_CHROME_SHIM']
+    ].each do |path|
+      present_path = present(path)
+      return present_path if present_path && File.exist?(present_path)
+    end
+
+    %w[
+      /app/.chrome-for-testing/chrome-linux64/chrome
+      /usr/bin/google-chrome
+      /usr/bin/google-chrome-stable
+      /usr/bin/chromium
+      /usr/bin/chromium-browser
+    ].find { |path| File.exist?(path) }
   end
 
   def apply_cookies
