@@ -1,16 +1,11 @@
 # frozen_string_literal: true
 
 require './framework/component'
-require './service/twitter_browser_service'
 require './util/api_util'
 
 class TwitterOpenService < Component
   TWEET_URL_PATTERN = %r{https://(?:twitter\.com|x\.com)/([a-zA-Z0-9_]+)/status/([0-9]+)}
   SPOILER_PATTERN = /\|\|.+?\|\|/m
-
-  def construct
-    @browser_service = TwitterBrowserService.instance.init
-  end
 
   def tweet_opening(args, event)
     open_tweets_from_content(event, args[0])
@@ -42,11 +37,24 @@ class TwitterOpenService < Component
 
   private
 
+  # Heroku では Chrome が R15 (メモリ超過) になるため、常に fxtwitter JSON を使う。
+  # ローカルだけ TWITTER_USE_BROWSER=true でヘッドレスを有効化できる。
   def fetch_tweet_data(tweet_url)
-    @browser_service.fetch_tweet(tweet_url)
-  rescue StandardError => e
-    warn "browser tweet fetch failed, falling back to fxtwitter: #{e.class}: #{e.message}"
     fetch_tweet_via_fxtwitter(tweet_url)
+  rescue StandardError => e
+    raise unless use_browser?
+
+    warn "fxtwitter fetch failed, trying browser: #{e.class}: #{e.message}"
+    browser_service.fetch_tweet(tweet_url)
+  end
+
+  def use_browser?
+    ENV['TWITTER_USE_BROWSER'] == 'true' && ENV['DYNO'].to_s.empty?
+  end
+
+  def browser_service
+    require './service/twitter_browser_service'
+    @browser_service ||= TwitterBrowserService.instance.init
   end
 
   def fetch_tweet_via_fxtwitter(tweet_url)
@@ -56,11 +64,16 @@ class TwitterOpenService < Component
     path = username ? "#{username}/status/#{tweet_id}" : "status/#{tweet_id}"
     response = ApiUtil.get("https://api.fxtwitter.com/#{path}")
     tweet = response['tweet']
-    raise TweetNotFoundError, tweet_url if tweet.nil? || response['code'] != 200
+    raise TweetNotFoundError, tweet_url if tweet.nil? || response['code'].to_i != 200
 
     author = tweet['author'] || {}
-    photos = tweet.dig('media', 'photos') || []
-    images = photos.filter_map { |photo| photo['url'] || photo['image'] }
+    media = tweet['media'] || {}
+    images = []
+    Array(media['photos']).each { |photo| images << (photo['url'] || photo['image']) }
+    Array(media['videos']).each { |video| images << video['thumbnail_url'] if video['thumbnail_url'] }
+    Array(media['all']).each do |item|
+      images << (item['url'] || item['thumbnail_url'] || item['image'])
+    end
 
     {
       text: tweet['text'].to_s,
@@ -68,7 +81,7 @@ class TwitterOpenService < Component
       author_handle: author['screen_name'] ? "@#{author['screen_name']}" : nil,
       author_icon: author['avatar_url'],
       tweet_url: tweet_url,
-      images: images
+      images: images.compact.uniq
     }
   end
 
