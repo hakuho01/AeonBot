@@ -9,6 +9,7 @@ require 'time'
 require './config/constants'
 require './controller/bot_controller'
 require './controller/timer_controller'
+require './service/twitter_browser_service'
 
 # 環境変数読み込み
 Dotenv.load
@@ -127,5 +128,7 @@ loop do
   timer_controller.check_daily_task
   sleep 30
 end
+
+at_exit { TwitterBrowserService.instance.shutdown }
 
 bot.join

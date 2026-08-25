@@ -1,12 +1,12 @@
 require './config/constants'
 require './util/api_util'
+require './service/twitter_open_service'
 
 require 'net/http'
 require 'open-uri'
 require 'nokogiri'
 require 'openssl'
 require 'cgi'
-require 'simple_twitter'
 require 'time'
 require 'dotenv'
 
@@ -132,87 +132,70 @@ class ApiService < Component
 
   # TwitterNSFWサムネイル表示
   def twitter_control(event)
-    # discordが展開しているか確認する
     event_msg_id = event.message.id.to_s
     event_msg_ch = event.message.channel.id.to_s
 
-    uri = URI.parse("https://discord.com/api/channels/#{event_msg_ch}/messages/#{event_msg_id}")
-    res = Net::HTTP.get_response(uri, 'Authorization' => "Bot #{TOKEN}")
-    parsed_res = JSON.parse(res.body)
+    parsed_res = fetch_discord_message(event_msg_ch, event_msg_id)
     return if parsed_res.nil? || parsed_res['embeds'].nil?
 
-    if parsed_res['embeds'].empty? || parsed_res['embeds'][0]['title'] == 'X' # discordが埋め込みをやっていない場合
-      # ツイート情報を取得する
-      content = event.message.content
-      return if content.match(/\|\|http/) # 埋め込みがなくてもスポイラーなら展開しない
+    content = event.message.content
+    return unless TwitterOpenService.instance.init.expandable_tweet_urls?(content)
 
-      twitter_urls = content.scan(%r{(https://twitter.com/[a-zA-Z0-9_]+/status/[0-9]+)|(https://x.com/([a-zA-Z0-9_]+)/status/([0-9]+))})
-      post_content = ''
-
-      twitter_urls.each do |item|
-        twitter_url = item.select { |e| e.to_s.match?(%r{https?://\S+})}
-        vx_twitter_url = twitter_url[0].to_s[8, 1] == 't' ? twitter_url[0].to_s.insert(8, 'fx') : twitter_url[0].to_s.sub(/x.com/, 'fxtwitter.com')
-        post_content = post_content << vx_twitter_url << "\n"
-      end
-      event.respond(post_content)
-
-      # 元投稿の埋込削除
-      uri = URI.parse("https://discordapp.com/api/channels/#{event_msg_ch}/messages/#{event_msg_id}")
-      http = Net::HTTP.new(uri.host, uri.port)
-      http.use_ssl = uri.scheme === 'https'
-      params = {
-        "flags": 4
-      }
-      headers = { 'Content-Type' => 'application/json', 'Authorization' => "Bot #{TOKEN}" }
-      response = http.patch(uri.path, params.to_json, headers)
-      begin
-        response.value
-      rescue => e
-        # エラー発生時はエラー内容を白鳳にメンションする
-        event.respond "#{e.message} ¥r¥n #{response.body} <@!306022413139705858>"
-      end
-    else # 埋め込みをやっている場合
-      return unless !parsed_res['embeds'][0]['description'].nil? && parsed_res['embeds'][0]['description'].include?('https://t\\.co')
-
-      embed_body = parsed_res['embeds'][0]
-      embed_body['description'].gsub!('https://t\\.co', 'https://t.co/')
-
-      # API経由で投稿
-      uri = URI.parse("https://discordapp.com/api/channels/#{event_msg_ch}/messages")
-      http = Net::HTTP.new(uri.host, uri.port)
-      http.use_ssl = uri.scheme === 'https'
-      params = {
-        "content": "",
-        "tts": false,
-        "embeds": [
-          embed_body
-        ]
-      }
-      headers = { 'Content-Type' => 'application/json', 'Authorization' => "Bot #{TOKEN}" }
-      response = http.post(uri.path, params.to_json, headers)
-      begin
-        response.value
-      rescue => e
-        # エラー発生時はエラー内容を白鳳にメンションする
-        event.respond "#{e.message} ¥r¥n #{response.body} <@!306022413139705858>"
-      end
-
-      # 元投稿の埋込削除
-      uri = URI.parse("https://discordapp.com/api/channels/#{event_msg_ch}/messages/#{event_msg_id}")
-      http = Net::HTTP.new(uri.host, uri.port)
-      http.use_ssl = uri.scheme === 'https'
-      params = {
-        "flags": 4
-      }
-      headers = { 'Content-Type' => 'application/json', 'Authorization' => "Bot #{TOKEN}" }
-      response = http.patch(uri.path, params.to_json, headers)
-      begin
-        response.value
-      rescue => e
-        # エラー発生時はエラー内容を白鳳にメンションする
-        event.respond "#{e.message} ¥r¥n #{response.body} <@!306022413139705858>"
-      end
+    if broken_twitter_embed?(parsed_res)
+      TwitterOpenService.instance.init.open_tweets_from_content(event, content)
+      suppress_message_embeds(event_msg_ch, event_msg_id, event)
+    elsif t_co_link_broken?(parsed_res)
+      repost_fixed_t_co_embed(parsed_res, event_msg_ch, event_msg_id, event)
     end
+  end
+
+  def broken_twitter_embed?(parsed_res)
+    return true if parsed_res['embeds'].empty?
+
+    title = parsed_res['embeds'][0]['title']
+    return true if title.nil?
+
+    title.casecmp?('post') || title == 'X'
+  end
+
+  def t_co_link_broken?(parsed_res)
+    description = parsed_res.dig('embeds', 0, 'description')
+    !description.nil? && description.include?('https://t\\.co')
+  end
+
+  def fetch_discord_message(channel_id, message_id)
+    uri = URI.parse("https://discord.com/api/channels/#{channel_id}/messages/#{message_id}")
+    res = Net::HTTP.get_response(uri, 'Authorization' => "Bot #{TOKEN}")
+    JSON.parse(res.body)
+  end
+
+  def suppress_message_embeds(channel_id, message_id, event)
+    uri = URI.parse("https://discordapp.com/api/channels/#{channel_id}/messages/#{message_id}")
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = uri.scheme == 'https'
+    params = { "flags": 4 }
+    headers = { 'Content-Type' => 'application/json', 'Authorization' => "Bot #{TOKEN}" }
+    response = http.patch(uri.path, params.to_json, headers)
+    response.value
+  rescue StandardError => e
+    event.respond "#{e.message} ¥r¥n #{response.body} <@!306022413139705858>"
+  end
+
+  def repost_fixed_t_co_embed(parsed_res, channel_id, message_id, event)
+    embed_body = parsed_res['embeds'][0].dup
+    embed_body['description'] = embed_body['description'].gsub('https://t\\.co', 'https://t.co/')
+
+    uri = URI.parse("https://discordapp.com/api/channels/#{channel_id}/messages")
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = uri.scheme == 'https'
+    params = { "content": '', "tts": false, "embeds": [embed_body] }
+    headers = { 'Content-Type' => 'application/json', 'Authorization' => "Bot #{TOKEN}" }
+    response = http.post(uri.path, params.to_json, headers)
+    response.value
+
+    suppress_message_embeds(channel_id, message_id, event)
+  rescue StandardError => e
+    event.respond "#{e.message} ¥r¥n #{response.body} <@!306022413139705858>"
   end
 
   def channel_description(event)

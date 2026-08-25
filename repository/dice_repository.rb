@@ -26,11 +26,14 @@ class DiceRepository < Component
 
   def get_trpg_systems
     parsed_response = attempt_call_bcdice('/v2/game_system')
-    return if parsed_response['game_system'].nil?
+    return [] if parsed_response.nil? || parsed_response['game_system'].nil?
 
     parsed_response['game_system'].map do |system|
       system['id']
     end
+  rescue StandardError => e
+    warn "BCDice systems fetch failed: #{e.class}: #{e.message}"
+    []
   end
 
   def attempt_call_bcdice(endpoint)
@@ -42,5 +45,9 @@ class DiceRepository < Component
         next
       end
     end
+    nil
+  rescue StandardError => e
+    warn "BCDice servers fetch failed: #{e.class}: #{e.message}"
+    nil
   end
 end

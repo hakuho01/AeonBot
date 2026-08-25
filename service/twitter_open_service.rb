@@ -1,38 +1,86 @@
 # frozen_string_literal: true
 
-class TwitterOpenService < Component
-  def tweet_opening(args, event)
-    # ツイート情報を取得する
-    content = args[0]
-    twitter_url = content.match(%r{https://twitter.com/([a-zA-Z0-9_]+)/status/([0-9]+)})
-    twitter_id = twitter_url[2]
-    token = ENV['TWITTER_BEARER_TOKEN']
-    client = SimpleTwitter::Client.new(bearer_token: token)
-    response = client.get_raw("#{Constants::URLs::TWITTER}#{twitter_id}?tweet.fields=created_at,attachments,possibly_sensitive,public_metrics,entities&expansions=author_id,attachments.media_keys&user.fields=profile_image_url&media.fields=media_key,type,url")
-    parsed_response = JSON.parse(response)
+require './framework/component'
+require './service/twitter_browser_service'
+require './util/api_util'
 
-    likes = parsed_response['data']['public_metrics']['like_count']
-    rts = parsed_response['data']['public_metrics']['retweet_count']
-    footer_text = "#{likes} Favs, #{rts} RTs"
-    author_name = parsed_response['includes']['users'][0]['name']
-    author_icon = parsed_response['includes']['users'][0]['profile_image_url']
-    author_url = "https://twitter.com/#{parsed_response['includes']['users'][0]['username']}"
-    event.send_embed do |embed|
-      embed.description = parsed_response['data']['text']
-      embed.colour = 0x1DA1F2
-      embed.timestamp = Time.parse(parsed_response['data']['created_at'])
-      embed.footer = Discordrb::Webhooks::EmbedFooter.new(
-        text: footer_text
-      )
-      embed.author = Discordrb::Webhooks::EmbedAuthor.new(
-        name: author_name,
-        url: author_url,
-        icon_url: author_icon
-      )
+class TwitterOpenService < Component
+  TWEET_URL_PATTERN = %r{https://(?:twitter\.com|x\.com)/([a-zA-Z0-9_]+)/status/([0-9]+)}
+  SPOILER_PATTERN = /\|\|.+?\|\|/m
+
+  def construct
+    @browser_service = TwitterBrowserService.instance.init
+  end
+
+  def tweet_opening(args, event)
+    open_tweets_from_content(event, args[0])
+  end
+
+  def open_tweets_from_content(event, content)
+    extract_tweet_urls(content).each do |tweet_url|
+      open_tweet(event, tweet_url)
     end
-    parsed_response['includes']['media'].each do |n|
-      event.respond n['url']
+  end
+
+  # Discord の ||spoiler|| 内の URL は除外する
+  def extract_tweet_urls(content)
+    content.to_s.gsub(SPOILER_PATTERN, '').scan(TWEET_URL_PATTERN).map do |username, tweet_id|
+      "https://x.com/#{username}/status/#{tweet_id}"
     end
-    return
+  end
+
+  def expandable_tweet_urls?(content)
+    extract_tweet_urls(content).any?
+  end
+
+  def open_tweet(event, tweet_url)
+    tweet = @browser_service.fetch_tweet(tweet_url)
+    send_tweet_embed(event, tweet)
+  rescue TweetNotFoundError
+    nil
+  end
+
+  private
+
+  def send_tweet_embed(event, tweet)
+    author_url = if tweet[:author_handle]
+                   "https://x.com/#{tweet[:author_handle].delete_prefix('@')}"
+                 else
+                   tweet[:tweet_url]
+                 end
+
+    author_name = [tweet[:author_name], tweet[:author_handle]].compact.join(' ').strip
+    author_name = 'X' if author_name.empty?
+
+    author = { name: author_name, url: author_url }
+    author[:icon_url] = tweet[:author_icon] if valid_http_url?(tweet[:author_icon])
+
+    description = tweet[:text].to_s
+    description = '(本文なし)' if description.empty?
+
+    images = Array(tweet[:images]).select { |url| valid_http_url?(url) }
+
+    main_embed = {
+      description: description,
+      color: 0x1DA1F2,
+      url: tweet[:tweet_url],
+      author: author
+    }
+    main_embed[:image] = { url: images.first } if images.any?
+
+    embeds = [main_embed]
+    images.drop(1).each do |image_url|
+      embeds << { image: { url: image_url } }
+    end
+
+    ApiUtil.post(
+      "https://discord.com/api/channels/#{event.channel.id}/messages",
+      { content: '', tts: false, embeds: embeds },
+      { 'Content-Type' => 'application/json', 'Authorization' => "Bot #{TOKEN}" }
+    )
+  end
+
+  def valid_http_url?(url)
+    url.to_s.match?(%r{\Ahttps?://\S+\z})
   end
 end

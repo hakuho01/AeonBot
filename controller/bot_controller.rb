@@ -165,6 +165,8 @@ class BotController < Component
     when :hash
       @service.judge_detected_hash(event)
     when :thumb
+      return unless @twitter_open_service.expandable_tweet_urls?(event.message.content)
+
       sleep 2 # 埋め込み展開待機時間
       @api_service.twitter_control(event)
     when :wg

@@ -13,6 +13,7 @@ master.key
 
 # Used by dotenv library to load environment variables.
 .env
+.twitter_session.json
 
 # Ignore Byebug command history file.
 .byebug_history
