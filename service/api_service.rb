@@ -143,7 +143,7 @@ class ApiService < Component
 
     if broken_twitter_embed?(parsed_res)
       TwitterOpenService.instance.init.open_tweets_from_content(event, content)
-      suppress_message_embeds(event_msg_ch, event_msg_id, event)
+      suppress_message_embeds(event_msg_ch, event_msg_id, existing_flags: parsed_res['flags'].to_i)
     elsif t_co_link_broken?(parsed_res)
       repost_fixed_t_co_embed(parsed_res, event_msg_ch, event_msg_id, event)
     end
@@ -164,38 +164,47 @@ class ApiService < Component
   end
 
   def fetch_discord_message(channel_id, message_id)
-    uri = URI.parse("https://discord.com/api/channels/#{channel_id}/messages/#{message_id}")
+    uri = URI.parse("https://discord.com/api/v9/channels/#{channel_id}/messages/#{message_id}")
     res = Net::HTTP.get_response(uri, 'Authorization' => "Bot #{TOKEN}")
     JSON.parse(res.body)
   end
 
-  def suppress_message_embeds(channel_id, message_id, event)
-    uri = URI.parse("https://discordapp.com/api/channels/#{channel_id}/messages/#{message_id}")
+  SUPPRESS_EMBEDS_FLAG = 1 << 2
+
+  def suppress_message_embeds(channel_id, message_id, event = nil, existing_flags: 0)
+    uri = URI.parse("https://discord.com/api/v9/channels/#{channel_id}/messages/#{message_id}")
     http = Net::HTTP.new(uri.host, uri.port)
-    http.use_ssl = uri.scheme == 'https'
-    params = { "flags": 4 }
-    headers = { 'Content-Type' => 'application/json', 'Authorization' => "Bot #{TOKEN}" }
-    response = http.patch(uri.path, params.to_json, headers)
-    response.value
+    http.use_ssl = true
+
+    request = Net::HTTP::Patch.new(uri.request_uri)
+    request['Authorization'] = "Bot #{TOKEN}"
+    request['Content-Type'] = 'application/json'
+    request.body = { flags: existing_flags.to_i | SUPPRESS_EMBEDS_FLAG }.to_json
+
+    response = http.request(request)
+    return if response.is_a?(Net::HTTPSuccess)
+
+    # 元メッセージの埋め込み抑制に失敗しても本文展開自体は成功しているので、チャンネルには出さない
+    warn "suppress embeds failed: #{response.code} #{response.body} (channel=#{channel_id} message=#{message_id})"
   rescue StandardError => e
-    event.respond "#{e.message} ¥r¥n #{response.body} <@!306022413139705858>"
+    warn "suppress embeds error: #{e.class}: #{e.message}"
   end
 
   def repost_fixed_t_co_embed(parsed_res, channel_id, message_id, event)
     embed_body = parsed_res['embeds'][0].dup
     embed_body['description'] = embed_body['description'].gsub('https://t\\.co', 'https://t.co/')
 
-    uri = URI.parse("https://discordapp.com/api/channels/#{channel_id}/messages")
+    uri = URI.parse("https://discord.com/api/v9/channels/#{channel_id}/messages")
     http = Net::HTTP.new(uri.host, uri.port)
-    http.use_ssl = uri.scheme == 'https'
-    params = { "content": '', "tts": false, "embeds": [embed_body] }
+    http.use_ssl = true
+    params = { content: '', tts: false, embeds: [embed_body] }
     headers = { 'Content-Type' => 'application/json', 'Authorization' => "Bot #{TOKEN}" }
     response = http.post(uri.path, params.to_json, headers)
     response.value
 
-    suppress_message_embeds(channel_id, message_id, event)
+    suppress_message_embeds(channel_id, message_id, existing_flags: parsed_res['flags'].to_i)
   rescue StandardError => e
-    event.respond "#{e.message} ¥r¥n #{response.body} <@!306022413139705858>"
+    warn "repost fixed t.co embed failed: #{e.class}: #{e.message}"
   end
 
   def channel_description(event)
