@@ -2,6 +2,7 @@
 
 require './framework/component'
 require './util/api_util'
+require 'time'
 
 class TweetNotFoundError < StandardError; end
 
@@ -83,6 +84,7 @@ class TwitterOpenService < Component
       author_handle: author['screen_name'] ? "@#{author['screen_name']}" : nil,
       author_icon: author['avatar_url'],
       tweet_url: tweet_url,
+      created_at: tweet['created_at'] || tweet['created_timestamp'],
       images: images.compact.uniq
     }
   end
@@ -104,6 +106,7 @@ class TwitterOpenService < Component
     description = '(本文なし)' if description.empty?
 
     images = Array(tweet[:images]).select { |url| valid_http_url?(url) }
+    created_at = parse_tweet_time(tweet[:created_at])
 
     main_embed = {
       description: description,
@@ -111,6 +114,10 @@ class TwitterOpenService < Component
       url: tweet[:tweet_url],
       author: author
     }
+    if created_at
+      main_embed[:timestamp] = created_at.utc.iso8601
+      main_embed[:footer] = { text: created_at.getlocal('+09:00').strftime('%Y/%m/%d %H:%M') }
+    end
     main_embed[:image] = { url: images.first } if images.any?
 
     embeds = [main_embed]
@@ -123,6 +130,21 @@ class TwitterOpenService < Component
       { content: '', tts: false, embeds: embeds },
       { 'Content-Type' => 'application/json', 'Authorization' => "Bot #{TOKEN}" }
     )
+  end
+
+  def parse_tweet_time(value)
+    return if value.nil?
+
+    case value
+    when Time
+      value
+    when Integer, Float
+      Time.at(value.to_i)
+    when String
+      Time.parse(value)
+    end
+  rescue ArgumentError, TypeError
+    nil
   end
 
   def valid_http_url?(url)

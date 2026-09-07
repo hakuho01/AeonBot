@@ -142,14 +142,39 @@ class ApiService < Component
     return unless TwitterOpenService.instance.expandable_tweet_urls?(content)
 
     if broken_twitter_embed?(parsed_res)
+      # 展開・抑制の直前に再取得し、正規の埋め込みが付いていれば何もしない
+      return unless still_needs_twitter_expand?(event_msg_ch, event_msg_id)
+
       TwitterOpenService.instance.open_tweets_from_content(event, content)
-      suppress_message_embeds(event_msg_ch, event_msg_id, existing_flags: parsed_res['flags'].to_i)
+
+      rechecked = fetch_discord_message(event_msg_ch, event_msg_id)
+      return unless broken_twitter_embed?(rechecked)
+
+      suppress_message_embeds(event_msg_ch, event_msg_id, existing_flags: rechecked['flags'].to_i)
     elsif t_co_link_broken?(parsed_res)
-      repost_fixed_t_co_embed(parsed_res, event_msg_ch, event_msg_id, event)
+      return unless still_needs_t_co_fix?(event_msg_ch, event_msg_id)
+
+      rechecked = fetch_discord_message(event_msg_ch, event_msg_id)
+      repost_fixed_t_co_embed(rechecked, event_msg_ch, event_msg_id, event)
     end
   end
 
+  def still_needs_twitter_expand?(channel_id, message_id)
+    broken_twitter_embed?(fetch_discord_message(channel_id, message_id))
+  rescue StandardError => e
+    warn "twitter embed recheck failed: #{e.class}: #{e.message}"
+    false
+  end
+
+  def still_needs_t_co_fix?(channel_id, message_id)
+    t_co_link_broken?(fetch_discord_message(channel_id, message_id))
+  rescue StandardError => e
+    warn "t.co embed recheck failed: #{e.class}: #{e.message}"
+    false
+  end
+
   def broken_twitter_embed?(parsed_res)
+    return true if parsed_res.nil? || parsed_res['embeds'].nil?
     return true if parsed_res['embeds'].empty?
 
     title = parsed_res['embeds'][0]['title']
