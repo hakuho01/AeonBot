@@ -70,13 +70,7 @@ class TwitterOpenService < Component
     raise TweetNotFoundError, tweet_url if tweet.nil? || response['code'].to_i != 200
 
     author = tweet['author'] || {}
-    media = tweet['media'] || {}
-    images = []
-    Array(media['photos']).each { |photo| images << (photo['url'] || photo['image']) }
-    Array(media['videos']).each { |video| images << video['thumbnail_url'] if video['thumbnail_url'] }
-    Array(media['all']).each do |item|
-      images << (item['url'] || item['thumbnail_url'] || item['image'])
-    end
+    images, videos = extract_media(tweet['media'] || {})
 
     {
       text: tweet['text'].to_s,
@@ -85,8 +79,50 @@ class TwitterOpenService < Component
       author_icon: author['avatar_url'],
       tweet_url: tweet_url,
       created_at: tweet['created_at'] || tweet['created_timestamp'],
-      images: images.compact.uniq
+      images: images,
+      videos: videos
     }
+  end
+
+  def extract_media(media)
+    images = []
+    videos = []
+
+    Array(media['photos']).each do |photo|
+      images << (photo['url'] || photo['image'])
+    end
+
+    Array(media['videos']).each do |video|
+      videos << best_video_url(video)
+    end
+
+    # photos/videos が空のときだけ all を見る（両方拾うとサムネ+mp4で二重になる）
+    if images.empty? && videos.empty?
+      Array(media['all']).each do |item|
+        case item['type']
+        when 'video', 'gif', 'animated_gif'
+          videos << best_video_url(item)
+        else
+          images << (item['url'] || item['image'] || item['thumbnail_url'])
+        end
+      end
+    end
+
+    [images.compact.uniq, videos.compact.uniq]
+  end
+
+  def best_video_url(video)
+    candidates = Array(video['variants']) + Array(video['formats'])
+    mp4s = candidates.select do |variant|
+      url = variant['url']
+      next false unless url
+
+      variant['content_type'] == 'video/mp4' ||
+        variant['container'] == 'mp4' ||
+        url.include?('.mp4')
+    end
+    best = mp4s.max_by { |variant| variant['bitrate'].to_i }
+    best&.fetch('url', nil) || video['url']
   end
 
   def send_tweet_embed(event, tweet)
@@ -102,24 +138,32 @@ class TwitterOpenService < Component
     author = { name: author_name, url: author_url }
     author[:icon_url] = tweet[:author_icon] if valid_http_url?(tweet[:author_icon])
 
-    description = tweet[:text].to_s
-    description = '(本文なし)' if description.empty?
-
+    description = tweet[:text].to_s.strip
     images = Array(tweet[:images]).select { |url| valid_http_url?(url) }
+    videos = Array(tweet[:videos]).select { |url| valid_http_url?(url) }
     created_at = parse_tweet_time(tweet[:created_at])
 
     main_embed = {
-      description: description,
       color: 0x1DA1F2,
       url: tweet[:tweet_url],
       author: author
     }
+    main_embed[:description] = description unless description.empty?
     if created_at
-      main_embed[:timestamp] = created_at.utc.iso8601
       main_embed[:footer] = { text: created_at.getlocal('+09:00').strftime('%Y/%m/%d %H:%M') }
     end
-    main_embed[:image] = { url: images.first } if images.any?
 
+    # 動画は embed.image に入れると空埋め込みになるので content に載せて再生させる
+    if videos.any?
+      ApiUtil.post(
+        "https://discord.com/api/channels/#{event.channel.id}/messages",
+        { content: videos.join("\n"), tts: false, embeds: [main_embed] },
+        { 'Content-Type' => 'application/json', 'Authorization' => "Bot #{TOKEN}" }
+      )
+      return
+    end
+
+    main_embed[:image] = { url: images.first } if images.any?
     embeds = [main_embed]
     images.drop(1).each do |image_url|
       embeds << { image: { url: image_url } }
