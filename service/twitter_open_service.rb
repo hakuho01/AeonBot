@@ -3,12 +3,18 @@
 require './framework/component'
 require './util/api_util'
 require 'time'
+require 'tempfile'
+require 'net/http'
+require 'json'
+require 'securerandom'
 
 class TweetNotFoundError < StandardError; end
 
 class TwitterOpenService < Component
   TWEET_URL_PATTERN = %r{https://(?:twitter\.com|x\.com)/([a-zA-Z0-9_]+)/status/([0-9]+)}
   SPOILER_PATTERN = /\|\|.+?\|\|/m
+  # Discord の通常アップロード上限より少し余裕を見る
+  MAX_ATTACHMENT_BYTES = 24 * 1024 * 1024
 
   def tweet_opening(args, event)
     open_tweets_from_content(event, args[0])
@@ -93,7 +99,8 @@ class TwitterOpenService < Component
     end
 
     Array(media['videos']).each do |video|
-      videos << best_video_url(video)
+      urls = video_candidate_urls(video)
+      videos << urls if urls.any?
     end
 
     # photos/videos が空のときだけ all を見る（両方拾うとサムネ+mp4で二重になる）
@@ -101,17 +108,19 @@ class TwitterOpenService < Component
       Array(media['all']).each do |item|
         case item['type']
         when 'video', 'gif', 'animated_gif'
-          videos << best_video_url(item)
+          urls = video_candidate_urls(item)
+          videos << urls if urls.any?
         else
           images << (item['url'] || item['image'] || item['thumbnail_url'])
         end
       end
     end
 
-    [images.compact.uniq, videos.compact.uniq]
+    [images.compact.uniq, videos]
   end
 
-  def best_video_url(video)
+  # bitrate が高い順の mp4 URL 一覧（大きすぎる場合は下位を試す）
+  def video_candidate_urls(video)
     candidates = Array(video['variants']) + Array(video['formats'])
     mp4s = candidates.select do |variant|
       url = variant['url']
@@ -121,8 +130,9 @@ class TwitterOpenService < Component
         variant['container'] == 'mp4' ||
         url.include?('.mp4')
     end
-    best = mp4s.max_by { |variant| variant['bitrate'].to_i }
-    best&.fetch('url', nil) || video['url']
+    urls = mp4s.sort_by { |variant| -variant['bitrate'].to_i }.filter_map { |variant| variant['url'] }
+    urls << video['url'] if video['url']
+    urls.compact.uniq.select { |url| valid_http_url?(url) }
   end
 
   def send_tweet_embed(event, tweet)
@@ -140,7 +150,7 @@ class TwitterOpenService < Component
 
     description = tweet[:text].to_s.strip
     images = Array(tweet[:images]).select { |url| valid_http_url?(url) }
-    videos = Array(tweet[:videos]).select { |url| valid_http_url?(url) }
+    video_candidates = Array(tweet[:videos])
     created_at = parse_tweet_time(tweet[:created_at])
 
     main_embed = {
@@ -153,14 +163,8 @@ class TwitterOpenService < Component
       main_embed[:footer] = { text: created_at.getlocal('+09:00').strftime('%Y/%m/%d %H:%M') }
     end
 
-    # 動画は embed.image に入れると空埋め込みになるので content に載せて再生させる
-    if videos.any?
-      ApiUtil.post(
-        "https://discord.com/api/channels/#{event.channel.id}/messages",
-        { content: videos.join("\n"), tts: false, embeds: [main_embed] },
-        { 'Content-Type' => 'application/json', 'Authorization' => "Bot #{TOKEN}" }
-      )
-      return
+    if video_candidates.any?
+      return send_tweet_with_videos(event, main_embed, video_candidates)
     end
 
     main_embed[:image] = { url: images.first } if images.any?
@@ -169,11 +173,122 @@ class TwitterOpenService < Component
       embeds << { image: { url: image_url } }
     end
 
+    post_json_message(event.channel.id, '', embeds)
+  end
+
+  def send_tweet_with_videos(event, main_embed, video_candidates)
+    files = []
+    begin
+      video_candidates.each_with_index do |urls, index|
+        file = download_video_tempfile(urls, index)
+        files << file if file
+      end
+
+      if files.empty?
+        # ダウンロードできない場合のみ URL フォールバック
+        fallback = video_candidates.filter_map(&:first).join("\n")
+        return post_json_message(event.channel.id, fallback, [main_embed])
+      end
+
+      post_multipart_message(event.channel.id, [main_embed], files)
+    ensure
+      files.each do |file|
+        path = file.path
+        file.close
+        file.unlink if path && File.exist?(path)
+      rescue StandardError
+        nil
+      end
+    end
+  end
+
+  def download_video_tempfile(candidate_urls, index)
+    Array(candidate_urls).each do |url|
+      body = download_bytes(url)
+      next if body.nil? || body.bytesize.zero? || body.bytesize > MAX_ATTACHMENT_BYTES
+
+      tmp = Tempfile.new(["tweet-video-#{index}", '.mp4'])
+      tmp.binmode
+      tmp.write(body)
+      tmp.flush
+      tmp.rewind
+      return tmp
+    rescue StandardError => e
+      warn "video download failed (#{url}): #{e.class}: #{e.message}"
+      next
+    end
+    nil
+  end
+
+  def download_bytes(url)
+    uri = URI.parse(url)
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = uri.scheme == 'https'
+    http.open_timeout = 10
+    http.read_timeout = 60
+
+    response = http.request_get(uri.request_uri)
+    return response.body if response.is_a?(Net::HTTPSuccess)
+
+    # リダイレクト追従（最大3回）
+    3.times do
+      break unless response.is_a?(Net::HTTPRedirection)
+
+      uri = URI.parse(response['location'])
+      http = Net::HTTP.new(uri.host, uri.port)
+      http.use_ssl = uri.scheme == 'https'
+      response = http.request_get(uri.request_uri)
+      return response.body if response.is_a?(Net::HTTPSuccess)
+    end
+
+    nil
+  end
+
+  def post_json_message(channel_id, content, embeds)
     ApiUtil.post(
-      "https://discord.com/api/channels/#{event.channel.id}/messages",
-      { content: '', tts: false, embeds: embeds },
+      "https://discord.com/api/v9/channels/#{channel_id}/messages",
+      { content: content, tts: false, embeds: embeds },
       { 'Content-Type' => 'application/json', 'Authorization' => "Bot #{TOKEN}" }
     )
+  end
+
+  def post_multipart_message(channel_id, embeds, files)
+    boundary = "----AeonBot#{SecureRandom.hex(16)}"
+    payload = { content: '', tts: false, embeds: embeds }.to_json
+
+    body = +''.b
+    body << "--#{boundary}\r\n".b
+    body << "Content-Disposition: form-data; name=\"payload_json\"\r\n".b
+    body << "Content-Type: application/json\r\n\r\n".b
+    body << payload.b
+    body << "\r\n".b
+
+    files.each_with_index do |file, index|
+      filename = "tweet-#{index + 1}.mp4"
+      body << "--#{boundary}\r\n".b
+      body << "Content-Disposition: form-data; name=\"files[#{index}]\"; filename=\"#{filename}\"\r\n".b
+      body << "Content-Type: video/mp4\r\n\r\n".b
+      body << file.read.b
+      body << "\r\n".b
+      file.rewind
+    end
+    body << "--#{boundary}--\r\n".b
+
+    uri = URI.parse("https://discord.com/api/v9/channels/#{channel_id}/messages")
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+    http.open_timeout = 10
+    http.read_timeout = 120
+
+    request = Net::HTTP::Post.new(uri.request_uri)
+    request['Authorization'] = "Bot #{TOKEN}"
+    request['Content-Type'] = "multipart/form-data; boundary=#{boundary}"
+    request.body = body
+
+    response = http.request(request)
+    raise "Error: #{response.code} - #{response.message}" unless response.code == '200'
+
+    JSON.parse(response.body)
   end
 
   def parse_tweet_time(value)
